@@ -1,0 +1,27 @@
+{
+  "name": "low-supply",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A child taps a supply. Both parents get told. Family use only.",
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "node scripts/make-keys.mjs && node --env-file-if-exists=.env.local server.mjs",
+    "test": "node --test",
+    "check:copy": "node scripts/check-copy.mjs",
+    "demo": "node scripts/demo.mjs",
+    "e2e": "node scripts/e2e.mjs",
+    "sync:family": "node scripts/sync-family.mjs",
+    "sync:sdc": "node scripts/sync-sdc.mjs",
+    "sync:icons": "node scripts/sync-icons.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "2.8.0",
+    "web-push": "3.6.7"
+  },
+  "devDependencies": {
+    "@tabler/icons": "^3.51.0"
+  }
+}

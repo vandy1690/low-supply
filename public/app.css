@@ -1,0 +1,226 @@
+/* Low Supply app styles, built on the Steven Design Co. system.
+   sdc.css carries the system's tokens and controls (generated, never edited here).
+   This file adds the parts the system does not have yet. Every color, size, space
+   and radius below reads from an SDC token. New parts are named ls-* and are listed
+   in SITE-CONTEXT.md as candidates to promote into the system. */
+
+:root {
+  /* Aliases built from system tokens, so the meaning is named once. */
+  --ls-edge: var(--sdc-control-border);
+  --ls-edge-thick: calc(var(--sdc-control-border) * 3);
+  --ls-low-fill: var(--sdc-signal-amber);        /* "the yellow": only ever under charcoal text */
+  --ls-low-text: var(--sdc-ink-charcoal);
+  --ls-out-fill: var(--sdc-error);
+  --ls-out-text: var(--sdc-paper-white);
+  --ls-tap: calc(var(--sdc-control-h) + var(--sdc-space-xs)); /* 52px: roomier than the 44px floor */
+  --ls-safe-top: env(safe-area-inset-top, 0px);
+  --ls-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ls-safe-left: env(safe-area-inset-left, 0px);
+  --ls-safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* The system sizes h1 to h3 for a marketing page. Here headings take a class. */
+h1, h2, h3 { font-size: inherit; letter-spacing: 0; }
+html { scroll-behavior: auto; scroll-padding-top: 0; }
+body { min-height: 100dvh; overflow-wrap: anywhere; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+h1:focus { outline: none; }
+
+.ls-icon { width: 1.5em; height: 1.5em; flex: none; }
+.ls-loading { padding: var(--sdc-space-xl) var(--sdc-gutter); color: var(--sdc-text-mute); }
+
+/* ---------- Page: the parent app and the setup screens ---------- */
+.ls-page {
+  max-width: var(--sdc-max-narrow);
+  margin: 0 auto;
+  padding: calc(var(--sdc-space-md) + var(--ls-safe-top)) calc(var(--sdc-gutter) + var(--ls-safe-right)) calc(var(--sdc-space-2xl) + var(--ls-safe-bottom)) calc(var(--sdc-gutter) + var(--ls-safe-left));
+  display: grid;
+  gap: var(--sdc-space-md);
+}
+/* Nickel Gothic has a slant axis and no weight axis. Left unset, iPhone Safari draws
+   it slanted, so every use pins it upright at regular width, as .sdc-display-3 does. */
+.ls-title, .ls-heading, .ls-bar__name { font-variation-settings: "wdth" 100, "slnt" 0; }
+.ls-title { font-family: var(--sdc-font-display); font-size: var(--sdc-text-display-2); font-weight: 400; font-synthesis: none; line-height: 1.04; }
+.ls-heading { font-family: var(--sdc-font-display); font-size: var(--sdc-text-heading); font-weight: 400; font-synthesis: none; line-height: 1.1; }
+.ls-subhead { font-family: var(--sdc-font-body); font-size: var(--sdc-text-deck); font-weight: 700; line-height: 1.3; }
+.ls-lede { font-size: var(--sdc-text-deck); line-height: 1.45; margin: 0; }
+.ls-mute { color: var(--sdc-text-mute); font-size: var(--sdc-text-body-sm); margin: 0; }
+.ls-page p { margin: 0; }
+.ls-stack { display: grid; gap: var(--sdc-space-sm); }
+.ls-stack--lg { gap: var(--sdc-space-md); }
+.ls-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); }
+.ls-row--between { justify-content: space-between; }
+.ls-grow { flex: 1 1 12rem; min-width: 0; }
+
+/* Top bar */
+.ls-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sdc-space-sm); padding-bottom: var(--sdc-space-sm); border-bottom: var(--ls-edge) solid var(--sdc-rule); }
+.ls-bar__name { font-family: var(--sdc-font-display); font-size: var(--sdc-text-subheading); font-synthesis: none; font-weight: 400; margin: 0; }
+.ls-nav { display: flex; gap: var(--sdc-space-xs); }
+.ls-nav a {
+  display: inline-flex; align-items: center; gap: var(--sdc-space-xs);
+  min-height: var(--sdc-control-h); padding: var(--sdc-space-xs) var(--sdc-space-sm);
+  border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid transparent;
+  color: var(--sdc-text); font-weight: 600; font-size: var(--sdc-text-nav);
+}
+.ls-nav a:hover { border-color: var(--sdc-rule-strong); }
+/* Solid ink is the system's "you are here". */
+.ls-nav a[aria-current="page"] { background: var(--sdc-text); color: var(--sdc-bg); }
+.ls-back { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); min-height: var(--sdc-control-h); color: var(--sdc-text); font-weight: 600; justify-self: start; }
+.ls-back:hover { text-decoration: underline; }
+
+/* Buttons: sizes and tones on top of .sdc-btn */
+.sdc-btn { justify-content: center; min-height: var(--sdc-control-h); text-align: center; }
+.sdc-btn:disabled { background: var(--sdc-surface-2); color: var(--sdc-text-mute); border-color: var(--sdc-rule); cursor: not-allowed; transform: none; box-shadow: none; }
+.ls-btn--block { width: 100%; }
+.ls-btn--lg { min-height: var(--sdc-space-2xl); font-size: var(--sdc-text-deck); }
+.ls-btn--danger { color: var(--sdc-error); border-color: var(--sdc-error); }
+.ls-btn--danger:hover { background: var(--sdc-error); color: var(--sdc-paper-white); border-color: var(--sdc-error); }
+.ls-btn--quiet { border-color: transparent; text-decoration: underline; text-underline-offset: 3px; padding-inline: var(--sdc-space-xs); }
+
+/* Panel: a flat surface card. No shadow, because nothing here moves. */
+.ls-panel { background: var(--sdc-surface); border-radius: var(--sdc-radius); padding: var(--sdc-space-md); display: grid; gap: var(--sdc-space-sm); }
+.ls-panel .sdc-field__input, .ls-panel .sdc-select, .ls-panel .sdc-choice { background: var(--sdc-bg); }
+.ls-panel .sdc-choice:has(input:checked) { background: var(--sdc-accent); }
+
+/* List of rows inside a panel */
+.ls-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.ls-list > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); padding: var(--sdc-space-sm) 0; border-top: var(--ls-edge) solid var(--sdc-rule); }
+.ls-list > li:first-child { border-top: 0; padding-top: 0; }
+.ls-list > li:last-child { padding-bottom: 0; }
+.ls-list__main { flex: 1 1 10rem; min-width: 0; display: grid; }
+.ls-list__name { font-weight: 600; }
+.ls-list__link { display: flex; align-items: center; justify-content: space-between; gap: var(--sdc-space-sm); flex: 1 1 100%; min-height: var(--sdc-control-h); color: var(--sdc-text); }
+.ls-list__link:hover .ls-list__name { text-decoration: underline; }
+
+/* Request: one open ask on the parent list */
+.ls-request { background: var(--sdc-surface); border-radius: var(--sdc-radius); padding: var(--sdc-space-md); display: grid; gap: var(--sdc-space-sm); border-inline-start: var(--sdc-space-xs) solid var(--sdc-warning); }
+.ls-request--out { border-inline-start-color: var(--sdc-error); }
+.ls-request__top { display: flex; align-items: center; gap: var(--sdc-space-sm); }
+.ls-request__icon { width: var(--sdc-space-xl); height: var(--sdc-space-xl); }
+.ls-request__what { display: grid; min-width: 0; }
+.ls-request__item { font-size: var(--sdc-text-deck); font-weight: 700; line-height: 1.2; }
+
+/* Level: the word "Running low" or "I am out", never color alone */
+.ls-level { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); padding: calc(var(--sdc-space-xs) / 2) var(--sdc-space-xs); border-radius: var(--sdc-radius-sm); font-size: var(--sdc-text-body-sm); font-weight: 700; background: var(--ls-low-fill); color: var(--ls-low-text); border: var(--ls-edge) solid transparent; justify-self: start; }
+.ls-level--out { background: var(--ls-out-fill); color: var(--ls-out-text); }
+.ls-level .ls-icon { width: 1.15em; height: 1.15em; }
+
+/* Notice: a message on a status tint. Text on a tint is always --sdc-text. */
+.ls-notice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); padding: var(--sdc-space-sm) var(--sdc-space-md); border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong); background: var(--sdc-surface); color: var(--sdc-text); }
+.ls-notice--warning { border-color: var(--sdc-warning); background: var(--sdc-warning-tint); }
+.ls-notice--success { border-color: var(--sdc-success); background: var(--sdc-success-tint); }
+.ls-notice--error { border-color: var(--sdc-error); background: var(--sdc-error-tint); }
+.ls-notice__text { flex: 1 1 12rem; margin: 0; font-weight: 600; }
+
+/* Steps: where you are in setup */
+.ls-steps { font-size: var(--sdc-text-label); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--sdc-text-mute); margin: 0; }
+.ls-howto { margin: 0; padding-inline-start: var(--sdc-space-md); display: grid; gap: var(--sdc-space-xs); }
+.ls-howto li { padding-inline-start: var(--sdc-space-xs); }
+.ls-howto .ls-icon { display: inline-block; vertical-align: -0.3em; }
+
+/* Link code: the QR and the typed code */
+.ls-qr { background: var(--sdc-paper-white); padding: var(--sdc-space-sm); border-radius: var(--sdc-radius-sm); width: min(100%, calc(var(--sdc-space-5xl) * 1.75)); justify-self: center; }
+.ls-qr svg { width: 100%; height: auto; }
+.ls-qr rect { fill: var(--sdc-ink-black); }
+.ls-code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: var(--sdc-text-heading); font-weight: 700; letter-spacing: 0.12em; text-align: center; margin: 0; user-select: all; }
+.ls-scan { display: grid; gap: var(--sdc-space-sm); }
+.ls-scan video { width: 100%; max-height: 50dvh; border-radius: var(--sdc-radius-sm); background: var(--sdc-ink-black); object-fit: cover; }
+
+/* Supply settings rows */
+.ls-supply { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); }
+.ls-supply__name { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); flex: 1 1 10rem; font-weight: 600; }
+.ls-supply .sdc-select { width: auto; flex: 1 1 11rem; }
+.ls-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: var(--sdc-space-sm); }
+.ls-icon-pick .sdc-choice { padding-inline: var(--sdc-space-sm); }
+.ls-icon-pick .sdc-choice::before { content: none; }
+.ls-icon-pick .sdc-choice:has(input:checked) { outline: var(--ls-edge-thick) solid var(--sdc-text); outline-offset: calc(var(--sdc-control-border) * 2); }
+
+/* Dialog: a short yes or no. Height is set on purpose: iOS stretches a modal dialog otherwise. */
+/* Placed from the top with no bottom edge, so the height is the content's. A modal
+   dialog pinned top and bottom stretches to fill (and iOS 26 does it by default). */
+.ls-dialog { inset-block: 50% auto; transform: translateY(-50%); margin-block: 0; height: auto; max-height: 80dvh; overflow: auto; width: min(calc(100vw - var(--sdc-space-lg)), 28rem); padding: var(--sdc-space-md); border: 0; border-radius: var(--sdc-radius); background: var(--sdc-bg); color: var(--sdc-text); box-shadow: var(--sdc-shadow-modal); }
+.ls-dialog::backdrop { background: var(--sdc-scrim); }
+.ls-dialog form { display: grid; gap: var(--sdc-space-md); }
+
+/* ---------- The child app ---------- */
+
+/* Tile grid: the whole screen is buttons. --cols comes from how many supplies are on. */
+.ls-kid { min-height: 100dvh; display: flex; flex-direction: column; gap: var(--sdc-space-xs); padding: calc(var(--sdc-space-xs) + var(--ls-safe-top)) calc(var(--sdc-space-xs) + var(--ls-safe-right)) calc(var(--sdc-space-xs) + var(--ls-safe-bottom)) calc(var(--sdc-space-xs) + var(--ls-safe-left)); }
+.ls-grid { flex: 1; display: grid; grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); grid-auto-rows: minmax(var(--sdc-space-4xl), 1fr); gap: var(--sdc-space-xs); list-style: none; margin: 0; padding: 0; }
+.ls-grid > li { display: grid; }
+.ls-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sdc-space-xs);
+  padding: var(--sdc-space-sm);
+  background: var(--sdc-surface); color: var(--sdc-text);
+  border: var(--ls-edge-thick) solid var(--sdc-rule-strong); border-radius: var(--sdc-radius);
+  font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; text-align: center;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.ls-tile:hover { border-color: var(--sdc-text); }
+.ls-tile:active { background: var(--sdc-surface-2); }
+.ls-tile .ls-icon { width: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); height: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); stroke-width: 1.5; }
+.ls-tile--low { border-color: var(--sdc-warning); background: var(--sdc-warning-tint); }
+.ls-tile--out { border-color: var(--sdc-error); background: var(--sdc-error-tint); }
+.ls-tile--plain { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
+.ls-tile--plain:hover, .ls-tile--plain:active { background: var(--sdc-text); }
+.ls-tile__status { display: inline-flex; align-items: center; gap: calc(var(--sdc-space-xs) / 2); font-size: var(--sdc-text-body); }
+.ls-tile .ls-tile__status .ls-icon { width: 1.25em; height: 1.25em; stroke-width: 2; }
+/* The top row leaves room for the speaker button that sits over its corner. */
+.ls-tile--top { padding-block-start: calc(var(--ls-tap) + var(--sdc-space-xs)); }
+
+/* Speaker: read aloud on or off, in the corner */
+.ls-speaker {
+  position: fixed; z-index: 2; top: calc(var(--sdc-space-sm) + var(--ls-safe-top)); right: calc(var(--sdc-space-sm) + var(--ls-safe-right));
+  width: var(--ls-tap); height: var(--ls-tap); display: grid; place-items: center; padding: 0;
+  border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong);
+  background: var(--sdc-bg); color: var(--sdc-text); cursor: pointer;
+}
+.ls-speaker[aria-pressed="true"] { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
+
+/* The supply screen: a short head, then two buttons that share the rest */
+.ls-kid__head { display: flex; align-items: center; gap: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-sm)); min-height: calc(var(--ls-tap) + var(--sdc-space-xs)); }
+.ls-kid__back { display: inline-flex; align-items: center; justify-content: center; gap: var(--sdc-space-xs); min-width: var(--ls-tap); min-height: var(--ls-tap); padding: 0 var(--sdc-space-sm); border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong); background: var(--sdc-bg); color: var(--sdc-text); font-weight: 700; }
+.ls-kid__title { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; margin: 0; }
+.ls-kid__ask { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.2; margin: 0; padding: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-md)); }
+.ls-alerts { flex: 1; display: grid; grid-auto-rows: 1fr; gap: var(--sdc-space-xs); }
+.ls-alert {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sdc-space-xs);
+  min-height: var(--sdc-space-4xl); padding: var(--sdc-space-md);
+  border-radius: var(--sdc-radius); border: var(--ls-edge-thick) solid transparent;
+  font-family: var(--sdc-font-body); font-size: var(--sdc-text-display-2); font-weight: 700; line-height: 1.1; text-align: center;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.ls-alert .ls-icon { width: var(--sdc-space-2xl); height: var(--sdc-space-2xl); }
+.ls-alert__sub { font-size: var(--sdc-text-deck); font-weight: 600; }
+.ls-alert--low { background: var(--ls-low-fill); color: var(--ls-low-text); }
+.ls-alert--out { background: var(--ls-out-fill); color: var(--ls-out-text); }
+/* Sent: the fill drops back to a tint so "Cancel" does not look like the alarm itself. */
+.ls-alert--low.is-on { background: var(--sdc-warning-tint); color: var(--sdc-text); border-color: var(--sdc-warning); }
+.ls-alert--out.is-on { background: var(--sdc-error-tint); color: var(--sdc-text); border-color: var(--sdc-error); }
+.ls-alert:disabled { cursor: progress; }
+
+.ls-kid .ls-notice { font-size: var(--sdc-text-deck); margin-inline-end: calc(var(--ls-tap) + var(--sdc-space-sm)); }
+.ls-kid .ls-notice .sdc-btn { min-height: var(--ls-tap); min-width: var(--sdc-space-3xl); font-size: var(--sdc-text-deck); }
+
+/* People who ask for more contrast get full strength edges. */
+@media (prefers-contrast: more) {
+  .ls-tile, .ls-kid__back, .ls-speaker { border-color: var(--sdc-text); }
+}
+/* Windows High Contrast paints its own colors; keep every edge so shapes survive. */
+@media (forced-colors: active) {
+  .ls-alert, .ls-level, .ls-nav a { border-color: ButtonText; }
+  .ls-qr { forced-color-adjust: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdc-btn, .sdc-btn:hover { transition: none; transform: none; }
+}
+
+/* The open requests, most urgent first */
+.ls-requests { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sdc-space-sm); }
+
+/* A link inside a sentence is underlined, so it never depends on color alone. */
+.ls-page p a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Busy: shown when a tap takes more than a moment */
+.ls-busy { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: calc(var(--sdc-space-md) + var(--ls-safe-bottom)); margin: 0; padding: var(--sdc-space-xs) var(--sdc-space-md); border-radius: var(--sdc-radius-sm); background: var(--sdc-text); color: var(--sdc-bg); font-weight: 600; box-shadow: var(--sdc-shadow-float); }

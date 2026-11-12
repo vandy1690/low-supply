@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Low Supply</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Tell your parents when diabetes supplies are running low.">
+<meta name="theme-color" content="#F0EEE9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Low Supply">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" id="manifest" href="/manifest.webmanifest">
+<script>
+// A link code in the address rides along into the Home Screen app: the manifest's
+// start address carries it, because an installed app does not share storage with the browser.
+(function () {
+  var code = new URLSearchParams(location.search).get('join');
+  if (code && /^[A-Za-z0-9-]{8,9}$/.test(code)) document.getElementById('manifest').href = (location.pathname.indexOf('/low-supply') === 0 ? '/api/low-supply' : '/api') + '/manifest?join=' + encodeURIComponent(code);
+})();
+</script>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Display face: nickel-gothic-variable, Adobe Typekit kit uic8bwd (the SDC kit).
+     If the kit does not allow this address, headings fall back to Inter. -->
+<link rel="preconnect" href="https://use.typekit.net" crossorigin>
+<link rel="stylesheet" href="https://use.typekit.net/uic8bwd.css">
+<link rel="stylesheet" href="/sdc.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div id="app" class="ls-app"><p class="ls-loading">Opening Low Supply</p></div>
+<p id="busy" class="ls-busy" hidden>Working on it</p>
+<div id="live" class="sdc-u-sr-only" role="status" aria-live="polite"></div>
+<noscript><p class="ls-loading">Low Supply needs JavaScript turned on.</p></noscript>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
