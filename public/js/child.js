@@ -21,6 +21,9 @@ function lastSpan(n, i) {
 }
 
 const speaker = () => html`<button class="ls-speaker" id="speaker" data-act="speaker" aria-pressed="${st().me.readAloud ? 'true' : 'false'}" aria-label="Read aloud">${icon(st().me.readAloud ? 'volume' : 'volume-off')}</button>`;
+// The top of every child screen: the app's name on the left, read aloud on the far
+// right. It sits in its own row, so it never covers a button or a message.
+const topBar = (withSpeaker = true) => html`<div class="ls-kid__bar"><p class="ls-bar__name">Low Supply</p>${withSpeaker ? speaker() : ''}</div>`;
 // Anything that went wrong is said on the child's screen in full size, and spoken.
 const errorNote = () => {
   const n = S.notice;
@@ -73,14 +76,14 @@ function gridScreen() {
   return {
     key: 'kid:grid', title: st().me.name,
     body: html`<main class="ls-kid">
-      ${speaker()}
-      <h1 class="sdc-u-sr-only">Low Supply. Tap what you need.</h1>
+      ${topBar()}
+      <h1 class="sdc-u-sr-only">Tap what you need.</h1>
       ${errorNote()}
       ${st().notes.map(n => html`<div class="ls-notice ${n.kind === 'wait' ? 'ls-notice--wait' : 'ls-notice--success'}" role="status">${icon(n.kind === 'wait' ? 'calendar-event' : 'circle-check')}
         <p class="ls-notice__text">${noteText(n)}</p>
         <button class="sdc-btn sdc-btn--primary" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK</button></div>`)}
       ${list.length ? html`<ul class="ls-grid" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
-        <a class="ls-tile ${i < columns(list.length) ? 'ls-tile--top' : ''} ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
+        <a class="ls-tile ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
           ${icon(s.icon)}<span>${s.label}</span>
           ${s.wait ? html`<span class="ls-tile__status">${icon(s.wait.sleeps > 0 ? 'sun' : 'calendar-event')} Ordered. ${waitShort(s.wait)}</span>`
             : s.open ? html`<span class="ls-tile__status">${icon(s.open === 'out' ? 'alert-octagon' : 'alert-triangle')} Asked: ${LEVELS[s.open]}</span>` : ''}
@@ -102,10 +105,10 @@ function supplyScreen(s) {
   return {
     key: 'kid:s:' + s.itemId, title: s.label,
     body: html`<main class="ls-kid">
-      ${speaker()}
       <div class="ls-kid__head">
         <a class="ls-kid__back" href="#/" data-act="sayName" data-say="Back">${icon('arrow-left')}<span>Back</span></a>
         <h1 class="ls-kid__title">${s.label}</h1>
+        ${speaker()}
       </div>
       ${errorNote()}
       ${s.wait ? html`<div class="ls-wait" id="wait-${s.itemId}">
@@ -125,7 +128,7 @@ function checkinScreen(due) {
   return {
     key: 'kid:checkin', title: 'Check in',
     body: html`<main class="ls-kid">
-      ${speaker()}
+      ${topBar()}
       <h1 class="ls-kid__ask">${QUESTION}</h1>
       ${errorNote()}
       <ul class="ls-grid" ${gridStyle(n)}>
@@ -140,6 +143,7 @@ function pushScreen() {
   return {
     key: 'kid:push', title: 'Notes from your parents',
     body: html`<main class="ls-kid">
+      ${topBar(false)}
       <h1 class="ls-kid__ask">Get a note when a parent orders your supplies?</h1>
       ${errorNote()}
       <div class="ls-alerts">

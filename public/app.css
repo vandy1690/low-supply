@@ -50,7 +50,12 @@ h1:focus { outline: none; }
 .ls-lede { font-size: var(--sdc-text-deck); line-height: 1.45; margin: 0; }
 .ls-mute { color: var(--sdc-text-mute); font-size: var(--sdc-text-body-sm); margin: 0; }
 .ls-page p { margin: 0; }
-.ls-stack { display: grid; gap: var(--sdc-space-sm); }
+.ls-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sdc-space-sm); }
+/* A phone draws a date field at its own width and ignores the box it sits in. This
+   makes it behave like every other field: as wide as its container and no wider. */
+.sdc-field { min-width: 0; }
+.sdc-field__input[type="date"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; text-align: start; }
+.sdc-field__input[type="date"]::-webkit-date-and-time-value { text-align: start; }
 .ls-stack--lg { gap: var(--sdc-space-md); }
 .ls-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); }
 .ls-row--between { justify-content: space-between; }
@@ -114,10 +119,8 @@ h1:focus { outline: none; }
 .ls-list__link:hover .ls-list__name { text-decoration: underline; }
 
 /* Request: one open ask on the parent list */
-.ls-request { background: var(--sdc-surface); border-radius: var(--sdc-radius); padding: var(--sdc-space-md); display: grid; gap: var(--sdc-space-sm); border-inline-start: var(--sdc-space-xs) solid var(--sdc-warning); }
-.ls-request--out { border-inline-start-color: var(--sdc-error); }
-/* Ordered and waiting on a date: calm, not an alarm. The level badge still says how low. */
-.ls-request.ls-request--wait { border-inline-start-color: var(--sdc-accent); }
+/* One column that can shrink, so a wide control inside (a phone's date field) stays in the card. */
+.ls-request { background: var(--sdc-surface); border-radius: var(--sdc-radius); padding: var(--sdc-space-md); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sdc-space-sm); }
 .ls-request p { margin: 0; }
 .ls-request p .ls-icon { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.15em; }
 .ls-request__top { display: flex; align-items: center; gap: var(--sdc-space-sm); }
@@ -192,23 +195,20 @@ h1:focus { outline: none; }
 .ls-tile--plain:hover, .ls-tile--plain:active { background: var(--sdc-text); }
 .ls-tile__status { display: inline-flex; align-items: center; gap: calc(var(--sdc-space-xs) / 2); font-size: var(--sdc-text-body); }
 .ls-tile .ls-tile__status .ls-icon { width: 1.25em; height: 1.25em; stroke-width: 2; }
-/* The top row leaves room for the speaker button that sits over its corner. */
-.ls-tile--top { padding-block-start: calc(var(--ls-tap) + var(--sdc-space-xs)); }
-
-/* Speaker: read aloud on or off, in the corner */
+/* The child's top bar: the app's name, and read aloud at the far right */
+.ls-kid__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--sdc-space-sm); min-height: var(--ls-tap); padding-inline-start: var(--sdc-space-xs); }
 .ls-speaker {
-  position: fixed; z-index: 2; top: calc(var(--sdc-space-sm) + var(--ls-safe-top)); right: calc(var(--sdc-space-sm) + var(--ls-safe-right));
-  width: var(--ls-tap); height: var(--ls-tap); display: grid; place-items: center; padding: 0;
+  flex: none; margin-inline-start: auto; width: var(--ls-tap); height: var(--ls-tap); display: grid; place-items: center; padding: 0;
   border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong);
   background: var(--sdc-bg); color: var(--sdc-text); cursor: pointer;
 }
 .ls-speaker[aria-pressed="true"] { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
 
 /* The supply screen: a short head, then two buttons that share the rest */
-.ls-kid__head { display: flex; align-items: center; gap: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-sm)); min-height: calc(var(--ls-tap) + var(--sdc-space-xs)); }
+.ls-kid__head { display: flex; align-items: center; gap: var(--sdc-space-sm); min-height: var(--ls-tap); }
 .ls-kid__back { display: inline-flex; align-items: center; justify-content: center; gap: var(--sdc-space-xs); min-width: var(--ls-tap); min-height: var(--ls-tap); padding: 0 var(--sdc-space-sm); border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong); background: var(--sdc-bg); color: var(--sdc-text); font-weight: 700; }
-.ls-kid__title { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; margin: 0; }
-.ls-kid__ask { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.2; margin: 0; padding: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-md)); }
+.ls-kid__title { flex: 1; min-width: 0; font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; margin: 0; }
+.ls-kid__ask { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.2; margin: 0; padding: var(--sdc-space-sm); }
 /* Waiting on a delayed order: one sun for each day left, and the count as a big number */
 .ls-wait { display: grid; justify-items: center; gap: var(--sdc-space-xs); padding: var(--sdc-space-md); text-align: center;
   background: var(--sdc-surface); border: var(--ls-edge-thick) solid var(--sdc-accent); border-radius: var(--sdc-radius); }
@@ -237,7 +237,7 @@ h1:focus { outline: none; }
 .ls-alert--out.is-on { background: var(--sdc-error-tint); color: var(--sdc-text); border-color: var(--sdc-error); }
 .ls-alert:disabled { cursor: progress; }
 
-.ls-kid .ls-notice { font-size: var(--sdc-text-deck); margin-inline-end: calc(var(--ls-tap) + var(--sdc-space-sm)); }
+.ls-kid .ls-notice { font-size: var(--sdc-text-deck); }
 .ls-kid .ls-notice .sdc-btn { min-height: var(--ls-tap); min-width: var(--sdc-space-3xl); font-size: var(--sdc-text-deck); }
 
 /* People who ask for more contrast get full strength edges. */

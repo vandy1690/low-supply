@@ -102,7 +102,7 @@ await kid.locator('.ls-grid').waitFor();
 assert.equal(await kid.locator('.ls-tile').count(), 4);
 await check(kid, 'kid-grid-4');
 const box = await kid.locator('.ls-grid').boundingBox();
-assert.ok(box.height > 800, 'the buttons fill the screen');
+assert.ok(box.height > 740, 'the buttons fill the screen under the top bar');
 await dad.getByText("Linked. Kid 1's").waitFor({ timeout: 9000 });
 await dad.getByRole('button', { name: 'Finish setup' }).click();
 await dad.getByRole('heading', { name: 'Requests' }).waitFor();

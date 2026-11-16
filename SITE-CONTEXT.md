@@ -26,6 +26,8 @@ Personal family use only. Not distributed, not sold.
 Built on SDC tokens because the system had nothing for them. None are in the system or
 its Storybook yet.
 - **Tile** (`ls-tile`, `ls-grid`): a full screen grid of large buttons, icon over label.
+- **Child top bar** (`ls-kid__bar`): the app's name with read aloud at the far right, in
+  its own row since 2026-11-16 so the speaker never covers a button or a message.
 - **Alert button** (`ls-alert`): the Running low and I am out buttons, with a sent state.
 - **Level** (`ls-level`): the small Running low or I am out badge. SDC has no badge.
 - **Notice** (`ls-notice`): a message on a status tint, three tones plus plain.
@@ -35,7 +37,8 @@ its Storybook yet.
   2026-11-16 (Requests, Info, Settings); icons hide under 30rem so no label breaks.
 - **Wait** (`ls-wait`, `ls-days`): the child's "ordered, but not ready yet" card: one
   sun for each day left (up to ten) and the count as a large number. Added 2026-11-16.
-  Tile, Request and Notice each gained a `--wait` variant on the accent color.
+  Tile and Notice each gained a `--wait` variant on the accent color. Request cards have
+  no colored edge (removed at Steve's request, 2026-11-16): the level badge carries it.
 - Token gap: SDC has no semantic name for a warning fill. The app aliases
   `--ls-low-fill` to the primitive `--sdc-signal-amber`. A `--sdc-warning-fill` would fix it.
 - Token gap: type sizes are px, so they follow page zoom but not a browser's own
