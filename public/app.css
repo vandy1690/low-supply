@@ -195,8 +195,9 @@ h1:focus { outline: none; }
 .ls-wait p { margin: 0; }
 .ls-wait__label { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); font-size: var(--sdc-text-deck); font-weight: 600; }
 .ls-wait__label .ls-icon { width: 1.25em; height: 1.25em; }
-.ls-wait__day { font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; }
 .ls-wait__count { font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; }
+/* The number is the thing a child reads, so it is the biggest thing on the card. */
+.ls-wait__number { display: block; font-size: var(--sdc-text-display-1); line-height: 1; font-variant-numeric: tabular-nums; }
 .ls-moons { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sdc-space-xs); color: var(--sdc-accent); }
 .ls-moons .ls-icon { width: var(--sdc-space-lg); height: var(--sdc-space-lg); stroke-width: 2; }
 .ls-alerts { flex: 1; display: grid; grid-auto-rows: 1fr; gap: var(--sdc-space-xs); }

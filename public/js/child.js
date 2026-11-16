@@ -1,5 +1,5 @@
 // The child app. The whole screen is buttons, and as few words as possible.
-import { S, op, html, icon, announce, read, write, dayText } from './ui.js';
+import { S, op, html, icon, announce, read, write } from './ui.js';
 import { LEVELS } from './catalog.js';
 import { say, setSpeech, stop as stopSpeech } from './speech.js';
 import { enablePush, pushBlocker, permission } from './push.js';
@@ -47,9 +47,9 @@ export function entered(path, key) {
 }
 export function onError(err) { say(err.message); }
 
-// Waiting on a date. A young child counts nights more easily than dates, so the
-// count comes first and the date backs it up. Nothing here promises the day: a
-// date from a pharmacy is a best guess, so it "should be" ready.
+// Waiting on a delayed order. The child never sees the date, only a countdown that
+// drops by one each day: nights left are easier for a young child than a calendar.
+// Nothing here promises the day. A pharmacy's date is a best guess, so it "should be" ready.
 function sleepsText(w) {
   if (w.sleeps > 1) return `${w.sleeps} more sleeps`;
   if (w.sleeps === 1) return '1 more sleep';
@@ -57,16 +57,15 @@ function sleepsText(w) {
   return `${w.by} is checking on it`;
 }
 const waitShort = w => (w.sleeps > 0 ? sleepsText(w) : w.sleeps === 0 ? 'Ready today' : 'Checking on it');
-const waitText = s => (s.wait.sleeps >= 0
-  ? `${s.say} is ordered, but not ready until ${dayText(s.wait.readyOn, true)}. ${sleepsText(s.wait)}.`
-  : `${s.say} is ordered, but it is late. ${sleepsText(s.wait)}.`);
+const waitHead = w => (w.sleeps > 0 ? 'Ordered, but not ready yet' : w.sleeps === 0 ? 'Ordered' : 'Ordered, but it is late');
+const waitText = s => `${s.say}. ${waitHead(s.wait)}. ${sleepsText(s.wait)}.`;
 const moons = n => (n >= 1 && n <= 10 ? html`<span class="ls-moons" aria-hidden="true">${Array.from({ length: n }, () => icon('moon'))}</span>` : '');
 
 function noteText(n) {
   if (n.kind === 'ready') return `Good news. Your ${n.label} is ready.`;
   if (n.kind !== 'wait') return `${n.by} ordered your ${n.label}.`;
   return n.sleeps > 0
-    ? `${n.by} ordered your ${n.label}. It is not ready yet. ${sleepsText(n)}, until ${dayText(n.readyOn, true)}.`
+    ? `${n.by} ordered your ${n.label}. It is not ready yet. ${sleepsText(n)}.`
     : `${n.by} ordered your ${n.label}. ${sleepsText(n)}.`;
 }
 
@@ -111,11 +110,11 @@ function supplyScreen(s) {
       </div>
       ${errorNote()}
       ${s.wait ? html`<div class="ls-wait" id="wait-${s.itemId}">
-        ${s.wait.sleeps >= 0
-          ? html`<p class="ls-wait__label">${icon('calendar-event')} Ordered, but not ready until</p><p class="ls-wait__day">${dayText(s.wait.readyOn, true)}</p>`
-          : html`<p class="ls-wait__label">${icon('calendar-event')} Ordered, but it is late</p>`}
+        <p class="ls-wait__label">${icon('calendar-event')} ${waitHead(s.wait)}</p>
         ${moons(s.wait.sleeps)}
-        <p class="ls-wait__count">${sleepsText(s.wait)}</p>
+        ${s.wait.sleeps > 0
+          ? html`<p class="ls-wait__count"><span class="ls-wait__number">${s.wait.sleeps}</span> ${s.wait.sleeps === 1 ? 'more sleep' : 'more sleeps'}</p>`
+          : html`<p class="ls-wait__count">${sleepsText(s.wait)}</p>`}
       </div>` : ''}
       <div class="ls-alerts">${btn('low', 'alert-triangle')}${btn('out', 'alert-octagon')}</div>
     </main>`

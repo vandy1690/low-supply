@@ -32,8 +32,8 @@ its Storybook yet.
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
 - **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header.
-- **Wait** (`ls-wait`, `ls-moons`): the child's "ordered, but not ready until" card: the
-  day, one moon for each night left (up to ten), and the count in words. Added 2026-11-16.
+- **Wait** (`ls-wait`, `ls-moons`): the child's "ordered, but not ready yet" card: one
+  moon for each night left (up to ten) and the count as a large number. Added 2026-11-16.
   Tile, Request and Notice each gained a `--wait` variant on the accent color.
 - Token gap: SDC has no semantic name for a warning fill. The app aliases
   `--ls-low-fill` to the primitive `--sdc-signal-amber`. A `--sdc-warning-fill` would fix it.
@@ -54,8 +54,10 @@ side uses as few words as possible, and every word a child sees can be spoken al
   That is what keeps it out of medical device territory. Settled in the brief, 2026-11-11.
 - **Never tell a child something was sent when it was not.** No offline queue. A failed
   send says so on screen and out loud. Claude's call during the build, 2026-11-11.
+- **The child sees a countdown, not the date.** A parent types the date; the child sees
+  sleeps left, dropping by one each day. Steve's call after testing, 2026-11-16.
 - **A ready date is never a promise.** When an order is delayed, the child is told it
-  "should be ready" on the day, counted in sleeps. Once the day passes, the child sees
+  "should be ready" when the count reaches today. Once the day passes, the child sees
   that a parent is checking on it, never a new guess. Claude's call, 2026-11-16.
 - **"Ready" is all the app claims.** Closing a delayed order tells the child it is ready,
   not that it is in the house: it may still be at the pharmacy. Claude's call, 2026-11-16.
