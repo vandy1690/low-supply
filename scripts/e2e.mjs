@@ -177,12 +177,12 @@ await kid.reload();
 await kid.locator('.ls-wait').waitFor();
 assert.match(await kid.locator('.ls-wait').innerText(), /Ordered, but not ready yet[\s\S]*4\s+days until ready/);
 assert.doesNotMatch(await kid.locator('#app').innerText(), /January|February|March|April|May|June|July|August|September|October|November|December/, 'the child sees a countdown, not a date');
-assert.equal(await kid.locator('.ls-wait .ls-icon').count(), 1, 'the count is words and a number, with no row of icons');
+assert.equal(await kid.locator('.ls-wait .ls-icon').count(), 0, 'the countdown is words and a number, with no icons');
 await check(kid, 'kid-supply-waiting');
 await kid.getByRole('link', { name: 'Back' }).click();
 await kid.getByText(/Dad ordered your Insulin\. 4 days until ready/).waitFor();
-assert.ok(await kid.locator('.ls-notice--warning').count(), 'the note is a warning: it is not ready yet');
-{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox(), note = await kid.locator('.ls-notice--warning').boundingBox();
+assert.ok(await kid.locator('.ls-note--wait').count(), 'the note is said as a warning: it is not ready yet');
+{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox(), note = await kid.locator('.ls-note--wait').boundingBox();
   assert.ok(ok.width > note.width * 0.8, 'OK is the full width of the note'); }
 assert.match(await kid.locator('#tile-insulin').innerText(), /Ordered\. 4 days until ready/);
 await check(kid, 'kid-grid-waiting');

@@ -77,13 +77,13 @@ function gridScreen() {
       ${topBar()}
       <h1 class="sdc-u-sr-only">Tap what you need.</h1>
       ${errorNote()}
-      ${st().notes.map(n => html`<div class="ls-notice ${n.kind === 'wait' ? 'ls-notice--warning' : 'ls-notice--success'}" role="status">${icon(n.kind === 'wait' ? 'calendar-event' : 'circle-check')}
-        <p class="ls-notice__text">${noteText(n)}</p>
-        <button class="sdc-btn sdc-btn--primary" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK</button></div>`)}
+      ${st().notes.map(n => html`<div class="ls-note ${n.kind === 'wait' ? 'ls-note--wait' : ''}" role="status">
+        <p class="ls-note__text">${noteText(n)}</p>
+        <button class="sdc-btn sdc-btn--primary ls-btn--block" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK</button></div>`)}
       ${list.length ? html`<ul class="ls-grid" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
         <a class="ls-tile ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
           ${icon(s.icon)}<span>${s.label}</span>
-          ${s.wait ? html`<span class="ls-tile__status">${icon('calendar-event')} Ordered. ${waitShort(s.wait)}</span>`
+          ${s.wait ? html`<span class="ls-tile__status ls-tile__status--wait">Ordered. ${waitShort(s.wait)}</span>`
             : s.open ? html`<span class="ls-tile__status">${icon(s.open === 'out' ? 'alert-octagon' : 'alert-triangle')} Asked: ${LEVELS[s.open]}</span>` : ''}
         </a></li>`)}</ul>`
         : html`<p class="ls-kid__ask">No supplies are turned on yet. Ask a parent to turn them on.</p>`}
@@ -110,7 +110,7 @@ function supplyScreen(s) {
       </div>
       ${errorNote()}
       ${s.wait ? html`<div class="ls-wait" id="wait-${s.itemId}">
-        <p class="ls-wait__label">${icon('calendar-event')} ${waitHead(s.wait)}</p>
+        <p class="ls-wait__label">${waitHead(s.wait)}</p>
         ${s.wait.sleeps > 0
           ? html`<p class="ls-wait__count"><span class="ls-wait__number">${s.wait.sleeps}</span> ${s.wait.sleeps === 1 ? 'day until ready' : 'days until ready'}</p>`
           : html`<p class="ls-wait__count">${sleepsText(s.wait)}</p>`}

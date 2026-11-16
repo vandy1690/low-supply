@@ -25,18 +25,24 @@ Personal family use only. Not distributed, not sold.
 ## New parts made for this app (candidates to promote into SDC)
 Built on SDC tokens because the system had nothing for them. None are in the system or
 its Storybook yet.
+- **Main button color:** `sdc-btn--primary` is drawn in ink (`--sdc-text`) in this app, not
+  the accent blue. Steve's call, 2026-11-16. It is an override in `app.css`, not a change
+  to SDC.
 - **Tile** (`ls-tile`, `ls-grid`): a full screen grid of large buttons, icon over label.
 - **Child top bar** (`ls-kid__bar`): the app's name with read aloud at the far right, in
   its own row since 2026-11-16 so the speaker never covers a button or a message.
 - **Alert button** (`ls-alert`): the Running low and I am out buttons, with a sent state.
 - **Level** (`ls-level`): the small Running low or I am out badge. SDC has no badge.
 - **Notice** (`ls-notice`): a message on a status tint, three tones plus plain.
+- **Note** (`ls-note`): a parent's note on the child's home screen. Plain words with no box
+  and a full width OK button; a delayed order is in the warning color (Steve, 2026-11-16).
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
 - **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header. Three equal tabs since
   2026-11-16 (Requests, Info, Settings); icons hide under 30rem so no label breaks.
 - **Wait** (`ls-wait`): the child's "ordered, but not ready yet" card: the
-  count as a large number on the warning tint, with no row of icons (Steve, 2026-11-16). Added 2026-11-16.
+  count as a large number in the warning color on the warning tint, with no icons
+  (Steve, 2026-11-16). Added 2026-11-16.
   The wait tile and the child's wait note use the warning look too. Request cards have
   no colored edge (removed at Steve's request, 2026-11-16): the level badge carries it.
 - Token gap: SDC has no semantic name for a warning fill. The app aliases
