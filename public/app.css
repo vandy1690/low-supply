@@ -96,6 +96,10 @@ h1:focus { outline: none; }
 /* Request: one open ask on the parent list */
 .ls-request { background: var(--sdc-surface); border-radius: var(--sdc-radius); padding: var(--sdc-space-md); display: grid; gap: var(--sdc-space-sm); border-inline-start: var(--sdc-space-xs) solid var(--sdc-warning); }
 .ls-request--out { border-inline-start-color: var(--sdc-error); }
+/* Ordered and waiting on a date: calm, not an alarm. The level badge still says how low. */
+.ls-request.ls-request--wait { border-inline-start-color: var(--sdc-accent); }
+.ls-request p { margin: 0; }
+.ls-request p .ls-icon { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.15em; }
 .ls-request__top { display: flex; align-items: center; gap: var(--sdc-space-sm); }
 .ls-request__icon { width: var(--sdc-space-xl); height: var(--sdc-space-xl); }
 .ls-request__what { display: grid; min-width: 0; }
@@ -111,6 +115,7 @@ h1:focus { outline: none; }
 .ls-notice--warning { border-color: var(--sdc-warning); background: var(--sdc-warning-tint); }
 .ls-notice--success { border-color: var(--sdc-success); background: var(--sdc-success-tint); }
 .ls-notice--error { border-color: var(--sdc-error); background: var(--sdc-error-tint); }
+.ls-notice--wait { border-color: var(--sdc-accent); background: var(--sdc-surface); }
 .ls-notice__text { flex: 1 1 12rem; margin: 0; font-weight: 600; }
 
 /* Steps: where you are in setup */
@@ -162,6 +167,7 @@ h1:focus { outline: none; }
 .ls-tile .ls-icon { width: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); height: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); stroke-width: 1.5; }
 .ls-tile--low { border-color: var(--sdc-warning); background: var(--sdc-warning-tint); }
 .ls-tile--out { border-color: var(--sdc-error); background: var(--sdc-error-tint); }
+.ls-tile--wait { border-color: var(--sdc-accent); background: var(--sdc-surface-2); }
 .ls-tile--plain { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
 .ls-tile--plain:hover, .ls-tile--plain:active { background: var(--sdc-text); }
 .ls-tile__status { display: inline-flex; align-items: center; gap: calc(var(--sdc-space-xs) / 2); font-size: var(--sdc-text-body); }
@@ -183,6 +189,16 @@ h1:focus { outline: none; }
 .ls-kid__back { display: inline-flex; align-items: center; justify-content: center; gap: var(--sdc-space-xs); min-width: var(--ls-tap); min-height: var(--ls-tap); padding: 0 var(--sdc-space-sm); border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong); background: var(--sdc-bg); color: var(--sdc-text); font-weight: 700; }
 .ls-kid__title { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; margin: 0; }
 .ls-kid__ask { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.2; margin: 0; padding: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-md)); }
+/* Waiting on a date: the day, one moon for each night left, and the count in words */
+.ls-wait { display: grid; justify-items: center; gap: var(--sdc-space-xs); padding: var(--sdc-space-md); text-align: center;
+  background: var(--sdc-surface); border: var(--ls-edge-thick) solid var(--sdc-accent); border-radius: var(--sdc-radius); }
+.ls-wait p { margin: 0; }
+.ls-wait__label { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); font-size: var(--sdc-text-deck); font-weight: 600; }
+.ls-wait__label .ls-icon { width: 1.25em; height: 1.25em; }
+.ls-wait__day { font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; }
+.ls-wait__count { font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; }
+.ls-moons { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sdc-space-xs); color: var(--sdc-accent); }
+.ls-moons .ls-icon { width: var(--sdc-space-lg); height: var(--sdc-space-lg); stroke-width: 2; }
 .ls-alerts { flex: 1; display: grid; grid-auto-rows: 1fr; gap: var(--sdc-space-xs); }
 .ls-alert {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sdc-space-xs);

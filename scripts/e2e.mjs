@@ -154,6 +154,51 @@ await kid.getByRole('button', { name: 'I am out' }).waitFor();
 await dad.reload();
 await dad.getByText('Nothing is needed right now.').waitFor();
 
+// --- Ordered, but not ready until a date ---
+await kid.getByRole('button', { name: 'Running low' }).click();
+await kid.getByRole('button', { name: /Cancel running low/ }).waitFor();
+await dad.reload();
+await dad.getByRole('button', { name: /Ordered, but not ready until/ }).click();
+assert.equal(await dad.evaluate(() => document.activeElement.type), 'date', 'focus moves to the date field');
+await check(dad, 'dad-delay-form');
+await dad.getByRole('button', { name: 'Save the date' }).click();
+assert.match(await dad.locator('.ls-notice--error').innerText(), /Pick the date/);
+const in4 = new Date(Date.now() + 4 * 864e5);
+const ymd = `${in4.getFullYear()}-${String(in4.getMonth() + 1).padStart(2, '0')}-${String(in4.getDate()).padStart(2, '0')}`;
+await dad.locator('input[type=date]').fill(ymd);
+await dad.getByRole('button', { name: 'Save the date' }).click();
+await dad.getByRole('heading', { name: 'Ordered, not ready yet' }).waitFor();
+assert.match(await dad.locator('.ls-request--wait').innerText(), /Insulin[\s\S]*For Kid 1[\s\S]*Not ready until[\s\S]*4 days to go/);
+assert.equal(await dad.evaluate(() => document.activeElement.tagName), 'H1', 'focus goes back to the top, where the message is');
+await check(dad, 'dad-waiting');
+await mom.reload();
+await mom.locator('.ls-request--wait').waitFor();
+await kid.reload();
+await kid.locator('.ls-wait').waitFor();
+assert.match(await kid.locator('.ls-wait').innerText(), /Ordered, but not ready until[\s\S]*4 more sleeps/);
+assert.equal(await kid.locator('.ls-moons .ls-icon').count(), 4, 'one moon for each sleep');
+await check(kid, 'kid-supply-waiting');
+await kid.getByRole('link', { name: 'Back' }).click();
+await kid.getByText(/Dad ordered your Insulin\. It is not ready yet\. 4 more sleeps/).waitFor();
+assert.match(await kid.locator('#tile-insulin').innerText(), /Ordered\. 4 more sleeps/);
+await check(kid, 'kid-grid-waiting');
+await kid.getByRole('button', { name: 'OK' }).click();
+await kid.getByText(/It is not ready yet/).waitFor({ state: 'detached' });
+await kid.setViewportSize({ width: 320, height: 568 });
+await kid.locator('#tile-insulin').click();
+await kid.locator('.ls-wait').waitFor();
+await check(kid, 'kid-supply-waiting-small');
+await kid.setViewportSize({ width: 402, height: 874 });
+await kid.getByRole('link', { name: 'Back' }).click();
+await dad.getByRole('button', { name: /Change the date/ }).click();
+await dad.getByRole('button', { name: 'Never mind' }).click();
+await dad.getByRole('button', { name: /It is ready/ }).click();
+await dad.getByText('Marked ready. Kid 1 was told.').waitFor();
+await kid.reload();
+await kid.getByText('Good news. Your Insulin is ready.').waitFor();
+await kid.getByRole('button', { name: 'OK' }).click();
+await kid.getByText('Good news.').waitFor({ state: 'detached' });
+
 // --- A check in comes due (the clock is moved by editing the saved file) ---
 if (process.env.E2E_DATA) {
   const { readdirSync, writeFileSync } = await import('node:fs');

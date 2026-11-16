@@ -1,5 +1,5 @@
 // The child app. The whole screen is buttons, and as few words as possible.
-import { S, op, html, icon, announce, read, write } from './ui.js';
+import { S, op, html, icon, announce, read, write, dayText } from './ui.js';
 import { LEVELS } from './catalog.js';
 import { say, setSpeech, stop as stopSpeech } from './speech.js';
 import { enablePush, pushBlocker, permission } from './push.js';
@@ -43,10 +43,32 @@ export function screen(path) {
 export function entered(path, key) {
   if (key === 'kid:checkin') say(QUESTION);
   else if (key === 'kid:grid' && st().notes.length) say(noteText(st().notes[0]));
+  else if (key.startsWith('kid:s:') && supply(key.slice(6))?.wait) say(waitText(supply(key.slice(6))));
 }
 export function onError(err) { say(err.message); }
 
-const noteText = n => `${n.by} ordered your ${n.label}.`;
+// Waiting on a date. A young child counts nights more easily than dates, so the
+// count comes first and the date backs it up. Nothing here promises the day: a
+// date from a pharmacy is a best guess, so it "should be" ready.
+function sleepsText(w) {
+  if (w.sleeps > 1) return `${w.sleeps} more sleeps`;
+  if (w.sleeps === 1) return '1 more sleep';
+  if (w.sleeps === 0) return 'It should be ready today';
+  return `${w.by} is checking on it`;
+}
+const waitShort = w => (w.sleeps > 0 ? sleepsText(w) : w.sleeps === 0 ? 'Ready today' : 'Checking on it');
+const waitText = s => (s.wait.sleeps >= 0
+  ? `${s.say} is ordered, but not ready until ${dayText(s.wait.readyOn, true)}. ${sleepsText(s.wait)}.`
+  : `${s.say} is ordered, but it is late. ${sleepsText(s.wait)}.`);
+const moons = n => (n >= 1 && n <= 10 ? html`<span class="ls-moons" aria-hidden="true">${Array.from({ length: n }, () => icon('moon'))}</span>` : '');
+
+function noteText(n) {
+  if (n.kind === 'ready') return `Good news. Your ${n.label} is ready.`;
+  if (n.kind !== 'wait') return `${n.by} ordered your ${n.label}.`;
+  return n.sleeps > 0
+    ? `${n.by} ordered your ${n.label}. It is not ready yet. ${sleepsText(n)}, until ${dayText(n.readyOn, true)}.`
+    : `${n.by} ordered your ${n.label}. ${sleepsText(n)}.`;
+}
 
 function gridScreen() {
   const list = st().supplies;
@@ -56,13 +78,14 @@ function gridScreen() {
       ${speaker()}
       <h1 class="sdc-u-sr-only">Low Supply. Tap what you need.</h1>
       ${errorNote()}
-      ${st().notes.map(n => html`<div class="ls-notice ls-notice--success" role="status">${icon('circle-check')}
+      ${st().notes.map(n => html`<div class="ls-notice ${n.kind === 'wait' ? 'ls-notice--wait' : 'ls-notice--success'}" role="status">${icon(n.kind === 'wait' ? 'calendar-event' : 'circle-check')}
         <p class="ls-notice__text">${noteText(n)}</p>
         <button class="sdc-btn sdc-btn--primary" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK</button></div>`)}
       ${list.length ? html`<ul class="ls-grid" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
-        <a class="ls-tile ${i < columns(list.length) ? 'ls-tile--top' : ''} ${s.open ? `ls-tile--${s.open}` : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
+        <a class="ls-tile ${i < columns(list.length) ? 'ls-tile--top' : ''} ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
           ${icon(s.icon)}<span>${s.label}</span>
-          ${s.open ? html`<span class="ls-tile__status">${icon(s.open === 'out' ? 'alert-octagon' : 'alert-triangle')} Asked: ${LEVELS[s.open]}</span>` : ''}
+          ${s.wait ? html`<span class="ls-tile__status">${icon(s.wait.sleeps > 0 ? 'moon' : 'calendar-event')} Ordered. ${waitShort(s.wait)}</span>`
+            : s.open ? html`<span class="ls-tile__status">${icon(s.open === 'out' ? 'alert-octagon' : 'alert-triangle')} Asked: ${LEVELS[s.open]}</span>` : ''}
         </a></li>`)}</ul>`
         : html`<p class="ls-kid__ask">No supplies are turned on yet. Ask a parent to turn them on.</p>`}
     </main>`
@@ -87,6 +110,13 @@ function supplyScreen(s) {
         <h1 class="ls-kid__title">${s.label}</h1>
       </div>
       ${errorNote()}
+      ${s.wait ? html`<div class="ls-wait" id="wait-${s.itemId}">
+        ${s.wait.sleeps >= 0
+          ? html`<p class="ls-wait__label">${icon('calendar-event')} Ordered, but not ready until</p><p class="ls-wait__day">${dayText(s.wait.readyOn, true)}</p>`
+          : html`<p class="ls-wait__label">${icon('calendar-event')} Ordered, but it is late</p>`}
+        ${moons(s.wait.sleeps)}
+        <p class="ls-wait__count">${sleepsText(s.wait)}</p>
+      </div>` : ''}
       <div class="ls-alerts">${btn('low', 'alert-triangle')}${btn('out', 'alert-octagon')}</div>
     </main>`
   };

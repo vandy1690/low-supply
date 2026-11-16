@@ -1,5 +1,5 @@
 // The parent app: open requests, setup, and settings.
-import { S, op, html, icon, notice, announce, when, read, write, confirmDialog, resetDevice } from './ui.js';
+import { S, op, html, icon, notice, announce, when, read, write, confirmDialog, resetDevice, dayText } from './ui.js';
 import { BUILT_IN, ICON_CHOICES, LEVELS, CHECK_IN_DAYS, REMINDER_HOURS, DAY_NAMES, DAY_FULL } from './catalog.js';
 import { prettyCode, joinUrl, qrSvg } from './link.js';
 import { enablePush, disablePush, pushBlocker, permission } from './push.js';
@@ -7,6 +7,7 @@ import { enablePush, disablePush, pushBlocker, permission } from './push.js';
 const SETUP = ['notify', 'parent', 'child', 'supplies', 'schedule', 'link'];
 const invites = {};   // memberId -> { code, exp, svg, count }
 let setupParent = null;
+let delaying = null;   // the request whose "not ready until" date is being typed
 
 const st = () => S.state;
 const member = id => st().members.find(m => m.id === id);
@@ -153,6 +154,23 @@ function pushPanel() {
 
 // ---------- requests ----------
 
+// "Ordered, but not ready until": a date, kept as small as the job. The child sees a
+// countdown to it, and both parents get a follow up reminder that day.
+function delayForm(r) {
+  return html`<form class="ls-stack" data-submit="delaySave" data-id="${r.id}" novalidate>
+    <div class="sdc-field"><label class="sdc-field__label" for="ready-${r.id}">${r.item} for ${r.child}: not ready until</label>
+      <input class="sdc-field__input" type="date" id="ready-${r.id}" name="readyOn" min="${st().today}" value="${r.wait?.readyOn || ''}" aria-describedby="ready-${r.id}-hint" required>
+      <p class="sdc-field__hint" id="ready-${r.id}-hint">${r.child} sees a countdown to this day. Both parents get a reminder that day to follow up with the pharmacy or the doctor's office.</p></div>
+    <div class="ls-row"><button class="sdc-btn sdc-btn--primary ls-grow">Save the date</button>
+      <button class="sdc-btn ls-grow" type="button" data-act="delayClose">Never mind</button></div>
+  </form>`;
+}
+function waitLine(w) {
+  if (w.sleeps > 0) return html`<p>${icon('calendar-event')} Not ready until <strong>${dayText(w.readyOn)}</strong>. ${plural(w.sleeps, 'day', 'days')} to go.</p>`;
+  if (w.sleeps === 0) return html`<p>${icon('calendar-event')} Due to be ready <strong>today</strong>. Check with the pharmacy or the doctor's office.</p>`;
+  return html`<div class="ls-notice ls-notice--warning">${icon('alert-triangle')}<p class="ls-notice__text">It was due ${dayText(w.readyOn)}. Check with the pharmacy or the doctor's office, then mark it ready or set a new date.</p></div>`;
+}
+
 function requestsScreen() {
   const s = st();
   return {
@@ -168,9 +186,23 @@ function requestsScreen() {
           ${level(r.level)}
           <p class="ls-mute">Asked ${when(r.createdAt)}${r.levelAt !== r.createdAt ? `, changed ${when(r.levelAt)}` : ''}.</p>
           <button class="sdc-btn sdc-btn--primary ls-btn--block" id="order-${r.id}" data-act="order" data-id="${r.id}">${icon('check')} Mark ordered<span class="sdc-u-sr-only">: ${r.item} for ${r.child}</span></button>
+          ${delaying === r.id ? delayForm(r)
+            : html`<button class="sdc-btn ls-btn--block" id="delay-${r.id}" data-act="delayOpen" data-id="${r.id}">${icon('calendar-event')} Ordered, but not ready until…<span class="sdc-u-sr-only">: ${r.item} for ${r.child}</span></button>`}
         </li>`)}</ul>`
-      : html`<div class="ls-panel"><p class="ls-subhead">Nothing is needed right now.</p>
+      : html`<div class="ls-panel"><p class="ls-subhead">${s.waiting.length ? 'Nothing new is needed right now.' : 'Nothing is needed right now.'}</p>
           <p class="ls-mute">${children().length ? 'When a child taps a supply, it shows up here and on every parent phone.' : html`No child is set up yet. <a href="#/settings">Add one in Settings.</a>`}</p></div>`}
+      ${s.waiting.length ? html`<section class="ls-stack" aria-labelledby="waiting-h">
+        <h2 class="ls-heading" id="waiting-h">Ordered, not ready yet</h2>
+        <ul class="ls-requests">${s.waiting.map(r => html`<li class="ls-request ls-request--wait" id="waiting-${r.id}">
+          <div class="ls-request__top">${icon(r.icon, 'ls-request__icon')}
+            <div class="ls-request__what"><span class="ls-request__item">${r.item}</span><span>For ${r.child}</span></div></div>
+          ${level(r.level)}
+          ${waitLine(r.wait)}
+          <p class="ls-mute">Date set by ${r.wait.by}. ${r.child} sees a countdown.${r.wait.sleeps > 0 ? ' Both parents get a follow up reminder that day.' : ''}</p>
+          <button class="sdc-btn sdc-btn--primary ls-btn--block" id="order-${r.id}" data-act="order" data-id="${r.id}">${icon('check')} It is ready<span class="sdc-u-sr-only">: ${r.item} for ${r.child}</span></button>
+          ${delaying === r.id ? delayForm(r)
+            : html`<button class="sdc-btn ls-btn--block" id="delay-${r.id}" data-act="delayOpen" data-id="${r.id}">${icon('calendar-event')} Change the date<span class="sdc-u-sr-only">: ${r.item} for ${r.child}</span></button>`}
+        </li>`)}</ul></section>` : ''}
       ${s.recent.length ? html`<section class="ls-stack" aria-labelledby="recent-h">
         <h2 class="ls-heading" id="recent-h">Ordered lately</h2>
         <div class="ls-panel"><ul class="ls-list">${s.recent.map(r => html`<li>
@@ -375,12 +407,38 @@ function nextStep() {
   } else write('ls.setup', SETUP[i + 1]);
 }
 
+// After a card moves to another list, the button that was tapped is gone, so focus
+// goes back to the top of the screen where the message is.
+const focusHeading = () => { const h = document.querySelector('#app h1'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } };
+
 export const actions = {
   async order(el) {
-    const r = st().requests.find(x => x.id === el.dataset.id);
+    const r = [...st().requests, ...st().waiting].find(x => x.id === el.dataset.id);
     await op({ type: 'order', requestId: el.dataset.id });
-    const text = r ? `Marked ordered. ${r.child} was told.` : 'Marked ordered.';
+    const word = r?.wait ? 'ready' : 'ordered';
+    const text = r ? `Marked ${word}. ${r.child} was told.` : `Marked ${word}.`;
+    if (delaying === el.dataset.id) delaying = null;
     S.notice = { tone: 'success', text }; announce(text);
+    return focusHeading;
+  },
+  delayOpen(el) {
+    delaying = el.dataset.id;
+    return () => document.getElementById('ready-' + el.dataset.id)?.focus();
+  },
+  delayClose() {
+    const id = delaying;
+    delaying = null;
+    return () => document.getElementById('delay-' + id)?.focus();
+  },
+  async delaySave(form) {
+    const id = form.dataset.id, readyOn = form.elements.readyOn.value;
+    const r = [...st().requests, ...st().waiting].find(x => x.id === id);
+    if (!readyOn) { form.elements.readyOn.focus(); throw new Error('Pick the date it should be ready.'); }
+    await op({ type: 'delay', requestId: id, readyOn });
+    delaying = null;
+    const text = `Saved. ${r ? r.child : 'Your child'} was told it is ordered but not ready until ${dayText(readyOn)}. You will both get a reminder that day.`;
+    S.notice = { tone: 'success', text }; announce(text);
+    return focusHeading;
   },
   async reopen(el) { await op({ type: 'reopen', requestId: el.dataset.id }); announce('Back on the list.'); },
 

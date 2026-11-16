@@ -100,6 +100,15 @@ export function announce(text) {
   liveTimer = setTimeout(() => { live.textContent = text; }, 60);
 }
 
+// A "not ready until" day, written out. The day is a plain calendar date, so it is
+// read as UTC to keep a phone's own time zone from sliding it.
+export function dayText(ymd, long = false) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', long
+    ? { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' }
+    : { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 export function when(ms) {
   const mins = Math.round((Date.now() - ms) / 60000);
   if (mins < 2) return 'just now';

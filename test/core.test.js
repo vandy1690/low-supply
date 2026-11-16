@@ -210,3 +210,75 @@ test('on a public host, a second family can be started, and a setup code gates i
   assert.equal((await call(gated, 'create', { name: 'Stranger' })).status, 403);
   assert.equal((await call(gated, 'create', { name: 'Dad', setupCode: 'abc' })).status, 200);
 });
+
+test('ordered but not ready until a date: the child is told, reminders pause, and parents get a follow up on the day', async () => {
+  const s = await setup();
+  await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'low' });
+  const id = (await s.state(s.dad.token)).requests[0].id;
+
+  // Only a parent can do it, and only with a real date that is not in the past.
+  assert.equal((await s.call('POST', 'op', { type: 'delay', requestId: id, readyOn: '2026-11-15' }, s.kid.token)).status, 403);
+  for (const bad of ['2026-11-10', '2026-02-31', 'soon', '2028-01-01']) {
+    assert.equal((await s.call('POST', 'op', { type: 'delay', requestId: id, readyOn: bad }, s.dad.token)).status, 400, bad);
+  }
+
+  s.sent.length = 0;
+  await s.op(s.dad.token, { type: 'delay', requestId: id, readyOn: '2026-11-15' });
+  // The other parent and the child hear about it. The parent who did it does not.
+  assert.deepEqual(s.sent.map(m => m.to.split('/').pop()).sort(), ['kid', 'mom']);
+  assert.match(s.sent.find(m => m.to.endsWith('kid')).body, /not ready yet.*Sunday, November 15/);
+
+  let dad = await s.state(s.dad.token);
+  assert.equal(dad.requests.length, 0, 'it leaves the needs-action list');
+  assert.equal(dad.waiting.length, 1);
+  assert.deepEqual(dad.waiting[0].wait, { readyOn: '2026-11-15', sleeps: 4, by: 'Dad' });
+
+  let kid = await s.state(s.kid.token);
+  assert.deepEqual(kid.notes, [{ requestId: id, kind: 'wait', label: 'Sensor', readyOn: '2026-11-15', sleeps: 4, by: 'Dad' }]);
+  assert.equal(kid.supplies.find(x => x.itemId === 'sensor').wait.sleeps, 4);
+  await s.op(s.kid.token, { type: 'seenNote', requestId: id });
+  kid = await s.state(s.kid.token);
+  assert.equal(kid.notes.length, 0);
+  assert.equal(kid.supplies.find(x => x.itemId === 'sensor').wait.sleeps, 4, 'the countdown stays after OK');
+
+  // Two days on: no "still waiting" reminders, and one fewer sleep.
+  s.sent.length = 0;
+  s.clock.t += 2 * DAY;
+  kid = await s.state(s.kid.token);
+  assert.equal(kid.supplies.find(x => x.itemId === 'sensor').wait.sleeps, 2);
+  assert.equal(s.sent.length, 0);
+
+  // The child can still say it got worse, and the parents hear the date with it.
+  await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'out' });
+  assert.equal(s.sent.filter(m => /^Changed\. Kid 1: I am out/.test(m.title) && /not ready until Sun, Nov 15/.test(m.body)).length, 2);
+  assert.equal((await s.state(s.dad.token)).waiting[0].level, 'out');
+
+  // The day comes: one follow up to each parent, once that day, and again the next day.
+  s.sent.length = 0;
+  s.clock.t += 2 * DAY;
+  await s.state(s.dad.token);
+  await s.state(s.mom.token);
+  assert.equal(s.sent.filter(m => /^Follow up: Sensor for Kid 1/.test(m.title) && /due to be ready today.*pharmacy/.test(m.body)).length, 2);
+  assert.equal(s.sent.length, 2);
+  s.clock.t += DAY;
+  await s.state(s.dad.token);
+  assert.equal(s.sent.filter(m => /due to be ready on Sun, Nov 15/.test(m.body)).length, 2);
+  assert.equal((await s.state(s.kid.token)).supplies.find(x => x.itemId === 'sensor').wait.sleeps, -1);
+
+  // A new date starts the wait over and tells the child again.
+  await s.op(s.mom.token, { type: 'delay', requestId: id, readyOn: '2026-11-20' });
+  kid = await s.state(s.kid.token);
+  assert.equal(kid.notes[0].by, 'Mom');
+  assert.equal(kid.notes[0].sleeps, 4);
+
+  // Marking it closes it as ready, not as ordered.
+  s.sent.length = 0;
+  await s.op(s.dad.token, { type: 'order', requestId: id });
+  assert.match(s.sent.find(m => m.to.endsWith('kid')).title, /Your Sensor is ready/);
+  kid = await s.state(s.kid.token);
+  assert.deepEqual(kid.notes, [{ requestId: id, kind: 'ready', label: 'Sensor', by: 'Dad' }]);
+  assert.equal(kid.supplies.find(x => x.itemId === 'sensor').wait, null);
+  dad = await s.state(s.dad.token);
+  assert.equal(dad.waiting.length, 0);
+  assert.equal(dad.recent.length, 1);
+});
