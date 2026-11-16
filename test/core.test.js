@@ -322,7 +322,7 @@ test('quick info: parents share links and office numbers, a child never sees the
   assert.deepEqual((await s.state(s.dad.token)).info.map(i => [i.label, i.href]), [['Priority line', 'tel:6305550199,2']]);
 });
 
-test('the child button remembers that a supply was ordered for a week, or until the child asks again', async () => {
+test('the child button stays green for five days after an order, or until the child asks again, and a note lasts a day', async () => {
   const s = await setup();
   const sensor = async () => (await s.state(s.kid.token)).supplies.find(x => x.itemId === 'sensor');
   assert.equal((await sensor()).done, null);
@@ -332,17 +332,33 @@ test('the child button remembers that a supply was ordered for a week, or until 
   await s.op(s.dad.token, { type: 'order', requestId: id });
   assert.equal((await sensor()).done, 'ordered');
   assert.equal((await sensor()).open, null);
-  s.clock.t += 6 * DAY;
+  // The note at the top is there for a day, then goes without anyone tapping OK.
+  s.clock.t += 23 * HOUR;
+  assert.equal((await s.state(s.kid.token)).notes.length, 1);
+  s.clock.t += 2 * HOUR;
+  assert.equal((await s.state(s.kid.token)).notes.length, 0);
+  // The green button outlasts the note: five days from when the child was told.
+  s.clock.t += 4 * DAY - 2 * HOUR;
   assert.equal((await sensor()).done, 'ordered');
-  // Asking again puts the request first.
+  s.clock.t += HOUR;
+  assert.equal((await sensor()).done, null);
+  // A second order, then asking again puts the request first.
+  await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'low' });
+  await s.op(s.dad.token, { type: 'order', requestId: (await s.state(s.dad.token)).requests[0].id });
+  assert.equal((await sensor()).done, 'ordered');
   await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'out' });
   assert.deepEqual([(await sensor()).open, (await sensor()).done], ['out', null]);
   // A delayed order that comes ready says "ready", and the week runs out.
   const id2 = (await s.state(s.dad.token)).requests[0].id;
   await s.op(s.dad.token, { type: 'delay', requestId: id2, readyOn: '2026-11-20' });
   assert.equal((await sensor()).done, null);
+  // The "not ready yet" note also lasts a day. The countdown on the button stays.
+  assert.ok((await s.state(s.kid.token)).notes.some(n => n.kind === 'wait'));
+  s.clock.t += 25 * HOUR;
+  assert.equal((await s.state(s.kid.token)).notes.length, 0);
+  assert.ok((await sensor()).wait);
   await s.op(s.dad.token, { type: 'order', requestId: id2 });
   assert.equal((await sensor()).done, 'ready');
-  s.clock.t += 8 * DAY;
+  s.clock.t += 5 * DAY + HOUR;
   assert.equal((await sensor()).done, null);
 });

@@ -37,7 +37,8 @@ its Storybook yet.
 - **Note** (`ls-note`): a parent's note on the child's home screen. Plain words with no box
   and an underlined OK link right after the last word; a delayed order is in the warning color and good
   news in the success color (Steve, 2026-11-16). The supply's tile matches: amber with the
-  countdown while delayed, green with the one word "Ordered" (or "Ready") for a week after.
+  countdown while delayed, green with the one word "Ordered" (or "Ready") for five days after the child was told.
+  A note stays at the top for 24 hours at most, then goes without a tap (Steve, 2026-11-16).
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
 - **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header. Three equal tabs since
