@@ -251,12 +251,12 @@ function infoScreen() {
               <button class="sdc-btn ls-grow" type="button" data-act="infoEditClose">Never mind</button>
               <button class="sdc-btn ls-btn--danger ls-grow" type="button" id="info-rm-${i.id}" data-act="infoRemove" data-id="${i.id}" data-name="${i.label}">Remove</button></div>
           </form></li>`
-        : html`<li>
+        : html`<li class="ls-info">
             <div class="ls-list__main"><span class="ls-list__name">${i.label}</span><span class="ls-mute ls-info__value">${i.value}</span></div>
             ${safeHref(i) ? (i.kind === 'phone'
-              ? html`<a class="sdc-btn sdc-btn--primary" href="${safeHref(i)}">${icon('phone')} Call<span class="sdc-u-sr-only"> ${i.label}, ${i.value}</span></a>`
-              : html`<a class="sdc-btn sdc-btn--primary" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')} Open<span class="sdc-u-sr-only"> ${i.label}, ${i.value}, in a new tab</span></a>`) : ''}
-            <button class="sdc-btn" id="info-edit-${i.id}" data-act="infoEditOpen" data-id="${i.id}">Edit<span class="sdc-u-sr-only"> ${i.label}</span></button>
+              ? html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-btn--lg" href="${safeHref(i)}">${icon('phone')} Call<span class="sdc-u-sr-only"> ${i.label}, ${i.value}</span></a>`
+              : html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-btn--lg" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')} Open<span class="sdc-u-sr-only"> ${i.label}, ${i.value}, in a new tab</span></a>`) : ''}
+            <button class="sdc-btn ls-btn--quiet ls-info__edit" id="info-edit-${i.id}" data-act="infoEditOpen" data-id="${i.id}">Edit<span class="sdc-u-sr-only"> ${i.label}</span></button>
           </li>`))}</ul></div>`
       : html`<div class="ls-panel"><p class="ls-subhead">Nothing saved yet.</p>
           <p class="ls-mute">Add the patient portal, the pharmacy and the doctor's office below, so neither of you has to go looking.</p></div>`}
