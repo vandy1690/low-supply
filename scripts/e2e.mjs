@@ -182,8 +182,8 @@ await check(kid, 'kid-supply-waiting');
 await kid.getByRole('link', { name: 'Back' }).click();
 await kid.getByText(/Dad ordered your Insulin\. 4 days until ready/).waitFor();
 assert.ok(await kid.locator('.ls-note--wait').count(), 'the note is said as a warning: it is not ready yet');
-{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox(), note = await kid.locator('.ls-note--wait').boundingBox();
-  assert.ok(ok.width > note.width * 0.8, 'OK is the full width of the note'); }
+{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox();
+  assert.ok(ok.width >= 44 && ok.height >= 44, 'OK reads as a link and is still easy to tap'); }
 assert.match(await kid.locator('#tile-insulin').innerText(), /Ordered\. 4 days until ready/);
 await check(kid, 'kid-grid-waiting');
 await kid.getByRole('button', { name: 'OK' }).click();

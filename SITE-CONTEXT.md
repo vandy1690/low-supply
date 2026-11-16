@@ -35,7 +35,7 @@ its Storybook yet.
 - **Level** (`ls-level`): the small Running low or I am out badge. SDC has no badge.
 - **Notice** (`ls-notice`): a message on a status tint, three tones plus plain.
 - **Note** (`ls-note`): a parent's note on the child's home screen. Plain words with no box
-  and a full width OK button; a delayed order is in the warning color (Steve, 2026-11-16).
+  and an underlined OK link at the end; a delayed order is in the warning color (Steve, 2026-11-16).
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
 - **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header. Three equal tabs since
