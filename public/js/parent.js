@@ -256,10 +256,10 @@ function infoScreen() {
           </form></li>`
         : html`<li class="ls-info">
             ${safeHref(i) ? (i.kind === 'phone'
-              ? html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}">${icon('phone')}
+              ? html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}">
                   <span class="ls-info__text"><span class="ls-info__name"><span class="sdc-u-sr-only">Call </span>${i.label}</span>
                   <span class="ls-info__value">${i.value}${i.press ? `, then press ${i.press}` : ''}</span></span></a>`
-              : html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')}
+              : html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">
                   <span class="ls-info__text"><span class="ls-info__name"><span class="sdc-u-sr-only">Open </span>${i.label}</span>
                   <span class="ls-info__value">${i.value}<span class="sdc-u-sr-only">, leaves Low Supply</span></span></span></a>`)
               : html`<p class="ls-list__name">${i.label}</p>`}

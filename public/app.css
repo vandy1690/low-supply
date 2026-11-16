@@ -99,12 +99,11 @@ h1:focus { outline: none; }
 .ls-list > li:last-child { padding-bottom: 0; }
 .ls-list__main { flex: 1 1 10rem; min-width: 0; display: grid; }
 .ls-list__name { font-weight: 600; }
-/* Quick info: one full width button that says what it is and where it goes, then a
+/* Quick info: one full width button, words only, that says what it is and where it goes, then a
    plain "Edit" link centered under it, so the thing to tap in a hurry is the only button. */
 .ls-list > li.ls-info { display: grid; gap: var(--sdc-space-xs); }
 .ls-info__go { height: auto; min-height: var(--sdc-space-2xl); padding: var(--sdc-space-sm); white-space: normal; gap: var(--sdc-space-sm); }
-.ls-info__go .ls-icon { flex: none; width: var(--sdc-space-lg); height: var(--sdc-space-lg); }
-.ls-info__text { display: grid; text-align: start; min-width: 0; }
+.ls-info__text { display: grid; text-align: center; min-width: 0; }
 .ls-info__name { font-size: var(--sdc-text-deck); font-weight: 700; line-height: 1.25; }
 /* On the narrowest phones a long name drops a size so it does not break inside a word. */
 @media (max-width: 22rem) { .ls-info__name { font-size: var(--sdc-text-body); } }
