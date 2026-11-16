@@ -51,11 +51,14 @@ h1:focus { outline: none; }
 .ls-mute { color: var(--sdc-text-mute); font-size: var(--sdc-text-body-sm); margin: 0; }
 .ls-page p { margin: 0; }
 .ls-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sdc-space-sm); }
-/* A phone draws a date field at its own width and ignores the box it sits in. This
-   makes it behave like every other field: as wide as its container and no wider. */
+/* A phone draws a date or time field at its own width and ignores the box it sits in.
+   This makes it behave like every other field: as wide as its container and no wider. */
 .sdc-field { min-width: 0; }
-.sdc-field__input[type="date"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; text-align: start; }
-.sdc-field__input[type="date"]::-webkit-date-and-time-value { text-align: start; }
+/* A field that failed: a red edge, and the reason in words right under it. */
+.sdc-field__input[aria-invalid="true"] { border-color: var(--sdc-error); }
+.ls-form-error { font-weight: 600; }
+.sdc-field__input[type="date"], .sdc-field__input[type="time"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; text-align: start; }
+.sdc-field__input[type="date"]::-webkit-date-and-time-value, .sdc-field__input[type="time"]::-webkit-date-and-time-value { text-align: start; }
 .ls-stack--lg { gap: var(--sdc-space-md); }
 .ls-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); }
 .ls-row--between { justify-content: space-between; }
@@ -161,7 +164,9 @@ h1:focus { outline: none; }
 /* Supply settings rows */
 .ls-supply { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sdc-space-sm); }
 .ls-supply__name { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); flex: 1 1 10rem; font-weight: 600; }
-.ls-supply .sdc-select { width: auto; flex: 1 1 11rem; }
+/* On a phone the dropdown drops under its name and takes the whole row, so its words
+   have room even with wider letter spacing. Nothing inside it may spill past its edge. */
+.ls-supply .sdc-select { width: auto; flex: 1 1 16rem; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .ls-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: var(--sdc-space-sm); }
 .ls-icon-pick .sdc-choice { padding-inline: var(--sdc-space-sm); }
 .ls-icon-pick .sdc-choice::before { content: none; }
@@ -185,9 +190,12 @@ h1:focus { outline: none; }
   padding: var(--sdc-space-sm);
   background: var(--sdc-surface); color: var(--sdc-text);
   border: var(--ls-edge-thick) solid var(--sdc-rule-strong); border-radius: var(--sdc-radius);
-  font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; text-align: center;
+  font-family: var(--sdc-font-body); font-size: clamp(var(--sdc-text-body), 5.6vw, var(--sdc-text-heading)); font-weight: 700; line-height: 1.15; text-align: center;
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
+/* Three or more tiles across */
+.ls-grid--dense .ls-tile { padding: var(--sdc-space-xs); font-size: clamp(var(--sdc-text-body-sm), 4vw, var(--sdc-text-deck)); }
+.ls-grid--dense .ls-tile__status { font-size: var(--sdc-text-body-sm); }
 .ls-tile:hover { border-color: var(--sdc-text); }
 .ls-tile:active { background: var(--sdc-surface-2); }
 .ls-tile .ls-icon { width: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); height: clamp(var(--sdc-space-xl), 16vmin, var(--sdc-space-4xl)); stroke-width: 1.5; }
@@ -237,7 +245,9 @@ h1:focus { outline: none; }
 }
 .ls-alert .ls-icon { width: var(--sdc-space-2xl); height: var(--sdc-space-2xl); }
 .ls-alert__sub { font-size: var(--sdc-text-deck); font-weight: 600; }
-.ls-alert--low { background: var(--ls-low-fill); color: var(--ls-low-text); }
+/* The yellow is too close to the page for its edge to be seen by everyone, so it gets a
+   darker one (WCAG 1.4.11). */
+.ls-alert--low { background: var(--ls-low-fill); color: var(--ls-low-text); border-color: var(--sdc-warning); }
 .ls-alert--out { background: var(--ls-out-fill); color: var(--ls-out-text); }
 /* Sent: the fill drops back to a tint so "Cancel" does not look like the alarm itself. */
 .ls-alert--low.is-on { background: var(--sdc-warning-tint); color: var(--sdc-text); border-color: var(--sdc-warning); }
@@ -258,7 +268,7 @@ h1:focus { outline: none; }
 .ls-note__ok { position: relative; display: inline; appearance: none; background: none; border: 0; border-radius: var(--sdc-radius-sm); margin: 0;
   padding: 0 var(--sdc-space-xs); font: inherit; font-weight: 700; line-height: inherit; color: var(--sdc-text);
   text-decoration: underline; text-underline-offset: 0.15em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.ls-note__ok::after { content: ""; position: absolute; inset: calc(var(--sdc-space-sm) * -1) 0; }
+.ls-note__ok::after { content: ""; position: absolute; inset: calc(var(--sdc-space-sm) * -1) calc(var(--sdc-space-xs) * -1); }
 /* The system's focus ring, drawn close to the word. */
 .ls-note__ok:focus-visible { outline-offset: 0; }
 
@@ -270,6 +280,9 @@ h1:focus { outline: none; }
 @media (forced-colors: active) {
   .ls-alert, .ls-level, .ls-nav a { border-color: ButtonText; }
   .ls-qr { forced-color-adjust: none; }
+  /* Color is gone here, so the page you are on and a switch that is on are drawn with
+     the system's own "selected" colors. */
+  .ls-nav a[aria-current="page"], .sdc-btn[aria-pressed="true"], .ls-speaker[aria-pressed="true"] { forced-color-adjust: none; background: SelectedItem; color: SelectedItemText; border-color: SelectedItem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sdc-btn, .sdc-btn:hover { transition: none; transform: none; }

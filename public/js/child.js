@@ -12,9 +12,12 @@ const supply = id => st().supplies.find(s => s.itemId === id);
 // Two supplies split the screen, four make two by two, and so on.
 function columns(n) {
   if (window.matchMedia('(orientation: landscape)').matches) return n <= 3 ? n : n === 4 ? 2 : n <= 6 ? 3 : 4;
-  return n <= 3 ? 1 : n <= 8 ? 2 : 3;
+  // Three across needs room for a word like "Glucagon". A narrow phone stays at two.
+  return n <= 3 ? 1 : n <= 8 || window.innerWidth < 380 ? 2 : 3;
 }
 function gridStyle(n) { return html`style="--cols:${columns(n)}"`; }
+// Three or more across: smaller words and tighter tiles, so no name breaks mid word.
+const gridClass = n => (columns(n) >= 3 ? 'ls-grid ls-grid--dense' : 'ls-grid');
 function lastSpan(n, i) {
   const cols = columns(n), rest = n % cols;
   return i === n - 1 && rest ? html`style="grid-column: span ${cols - rest + 1}"` : '';
@@ -63,6 +66,8 @@ const waitShort = w => (w.sleeps > 0 ? sleepsText(w) : w.sleeps === 0 ? 'Ready t
 const waitHead = w => (w.sleeps > 0 ? 'Ordered, but not ready yet' : w.sleeps === 0 ? 'Ordered' : 'Ordered, but it is late');
 const waitText = s => `${s.say}. ${waitHead(s.wait)}. ${sleepsText(s.wait)}.`;
 
+// Notes already read out to a screen reader, so a redraw does not say them twice.
+const told = new Set();
 function noteText(n) {
   if (n.kind === 'ready') return `Good news. Your ${n.label} is ready.`;
   if (n.kind !== 'wait') return `${n.by} ordered your ${n.label}.`;
@@ -71,15 +76,22 @@ function noteText(n) {
 
 function gridScreen() {
   const list = st().supplies;
+  // A note drawn straight into the page is not reliably announced, so each new one is
+  // also sent through the live region.
+  const fresh = st().notes.filter(n => !told.has(n.kind + n.requestId));
+  if (fresh.length) {
+    fresh.forEach(n => told.add(n.kind + n.requestId));
+    setTimeout(() => announce(fresh.map(noteText).join(' ')), 400);
+  }
   return {
     key: 'kid:grid', title: st().me.name,
     body: html`<main class="ls-kid">
       ${topBar()}
       <h1 class="sdc-u-sr-only">Tap what you need.</h1>
       ${errorNote()}
-      ${st().notes.map(n => html`<div class="ls-note ${n.kind === 'wait' ? 'ls-note--wait' : 'ls-note--done'}" role="status">
+      ${st().notes.map(n => html`<div class="ls-note ${n.kind === 'wait' ? 'ls-note--wait' : 'ls-note--done'}">
         <p class="ls-note__text">${noteText(n)} <button class="ls-note__ok" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK<span class="sdc-u-sr-only">, got it</span></button></p></div>`)}
-      ${list.length ? html`<ul class="ls-grid" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
+      ${list.length ? html`<ul class="${gridClass(list.length)}" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
         <a class="ls-tile ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : s.done ? 'ls-tile--done' : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
           ${icon(s.icon)}<span>${s.label}</span>
           ${s.wait ? html`<span class="ls-tile__status ls-tile__status--wait">Ordered. ${waitShort(s.wait)}</span>`
@@ -128,7 +140,7 @@ function checkinScreen(due) {
       ${topBar()}
       <h1 class="ls-kid__ask">${QUESTION}</h1>
       ${errorNote()}
-      <ul class="ls-grid" ${gridStyle(n)}>
+      <ul class="${gridClass(n)}" ${gridStyle(n)}>
         ${due.map((s, i) => html`<li ${lastSpan(n, i)}><button class="ls-tile" id="due-${s.itemId}" data-act="checkinPick" data-id="${s.itemId}" data-say="${s.say}">${icon(s.icon)}<span>${s.label}</span></button></li>`)}
         <li ${lastSpan(n, n - 1)}><button class="ls-tile ls-tile--plain" id="all-good" data-act="allGood">${icon('check')}<span>No, I am all good</span></button></li>
       </ul>

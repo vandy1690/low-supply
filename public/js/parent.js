@@ -163,7 +163,7 @@ function pushPanel() {
 function delayForm(r) {
   return html`<form class="ls-stack" data-submit="delaySave" data-id="${r.id}" novalidate>
     <div class="sdc-field"><label class="sdc-field__label" for="ready-${r.id}">${r.item} for ${r.child}: not ready until</label>
-      <input class="sdc-field__input" type="date" id="ready-${r.id}" name="readyOn" min="${st().today}" value="${r.wait?.readyOn || ''}" aria-describedby="ready-${r.id}-hint" required>
+      <input class="sdc-field__input" type="date" id="ready-${r.id}" name="readyOn" min="${st().today}" max="${st().latest}" value="${r.wait?.readyOn || ''}" aria-describedby="ready-${r.id}-hint" required>
       <p class="sdc-field__hint" id="ready-${r.id}-hint">${r.child} sees a countdown to this day. Both parents get a reminder that day to follow up with the pharmacy or the doctor's office.</p></div>
     <div class="ls-row"><button class="sdc-btn sdc-btn--primary ls-grow">Save the date</button>
       <button class="sdc-btn ls-grow" type="button" data-act="delayClose">Never mind</button></div>
@@ -233,7 +233,7 @@ function infoFields(id, entry) {
       <input class="sdc-field__input" id="${id}-value" name="value" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" value="${entry ? (entry.kind === 'link' ? entry.href : entry.value) : ''}" aria-describedby="${id}-value-hint">
       <p class="sdc-field__hint" id="${id}-value-hint">Paste a link that starts with https, or type a phone number. No passwords, member numbers or names.</p></div>
     <div class="sdc-field"><label class="sdc-field__label" for="${id}-press">Then press (optional, phone numbers only)</label>
-      <input class="sdc-field__input" id="${id}-press" name="press" maxlength="8" inputmode="numeric" autocomplete="off" value="${entry ? entry.press : ''}" aria-describedby="${id}-press-hint">
+      <input class="sdc-field__input" id="${id}-press" name="press" maxlength="8" inputmode="tel" autocomplete="off" value="${entry ? entry.press : ''}" aria-describedby="${id}-press-hint">
       <p class="sdc-field__hint" id="${id}-press-hint">For a phone menu. Type 2, and the phone presses 2 for you about two seconds after the call connects.</p></div>`;
 }
 
@@ -505,8 +505,15 @@ export const actions = {
     const id = form.dataset.id, label = form.elements.label.value.trim(), value = form.elements.value.value.trim(), press = form.elements.press.value.trim();
     if (!label) { form.elements.label.focus(); throw new Error('Type what it is, for example Pharmacy.'); }
     if (!value) { form.elements.value.focus(); throw new Error('Type a web link or a phone number.'); }
-    if (id) { await op({ type: 'updateInfo', id, label, value, press }); infoEditing = null; }
-    else { await op({ type: 'addInfo', label, value, press }); infoLabel = ''; }
+    try {
+      if (id) await op({ type: 'updateInfo', id, label, value, press });
+      else await op({ type: 'addInfo', label, value, press });
+    } catch (e) {
+      // The server's answer is about one of the three boxes. Say which.
+      e.field = /menu choice/.test(e.message) ? 'press' : /name for it/.test(e.message) ? 'label' : 'value';
+      throw e;
+    }
+    if (id) infoEditing = null; else infoLabel = '';
     const text = `${label} was saved.`;
     S.notice = { tone: 'success', text }; announce(text);
     return focusHeading;
@@ -532,7 +539,7 @@ export const actions = {
     const id = form.dataset.id, readyOn = form.elements.readyOn.value;
     const r = [...st().requests, ...st().waiting].find(x => x.id === id);
     if (!readyOn) { form.elements.readyOn.focus(); throw new Error('Pick the date it should be ready.'); }
-    await op({ type: 'delay', requestId: id, readyOn });
+    try { await op({ type: 'delay', requestId: id, readyOn }); } catch (e) { e.field = 'readyOn'; throw e; }
     delaying = null;
     const text = `Saved. ${r ? r.child : 'Your child'} was told it is ordered but not ready until ${dayText(readyOn)}. You will both get a reminder that day.`;
     S.notice = { tone: 'success', text }; announce(text);

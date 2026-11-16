@@ -84,14 +84,23 @@ side uses as few words as possible, and every word a child sees can be spoken al
   that a parent is checking on it, never a new guess. Claude's call, 2026-11-16.
 - **"Ready" is all the app claims.** Closing a delayed order tells the child it is ready,
   not that it is in the house: it may still be at the pharmacy. Claude's call, 2026-11-16.
+- **A form that fails keeps what was typed and says why at the field.** The message goes
+  under the field it is about, the field is marked invalid and takes focus. Errors that
+  are not about a form (a child's failed send) stay in the notice at the top. Found in
+  Q&A, 2026-11-16.
 - **No accessibility overlay widget.** Settled in the brief, 2026-11-11.
 
 ## Before anything ships
 1. `npm test` (the rules: requests, reminders, check ins, quiet hours, linking).
 2. `npm run e2e` with the dev server running (three devices in a real browser, axe on
    every screen at WCAG 2.2 AA, target sizes, sideways scroll at 320px).
-3. `npm run check:copy` (the never-say list, read from the app's JavaScript).
-4. A look on a real iPhone from the Home Screen. Notifications cannot be proven any other way.
+3. `npm run qa` (every screen in every state: axe at WCAG 2.2 AA, sideways scroll, text
+   spilling or breaking mid word, target size, text spacing, keyboard reach, a visible
+   focus ring that is not covered, edge contrast, and Windows High Contrast). Run it again
+   with `QA_BROWSER=webkit` for Safari's engine. It starts its own server.
+4. `npm run check:copy` (the never-say list, read from the app's JavaScript).
+5. A look on a real iPhone from the Home Screen. Notifications cannot be proven any other way.
+   A clean Q&A run is not proof either: it cannot hear a screen reader or judge a layout.
 
 ## If it is ever shared outside the family
 Not a lawyer. Confirm the medical device question before release, and read up on COPPA

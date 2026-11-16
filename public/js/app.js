@@ -105,18 +105,63 @@ async function run(name, el, event) {
   S.notice = null;
   // Most taps answer at once. When one does not, say so, on screen and to a screen reader.
   const slow = setTimeout(() => { busyNote.hidden = false; announce('Working on it.'); }, 700);
-  let after;
+  // A form that fails must not cost the person what they typed, and has to say what
+  // went wrong where they are looking, not only at the top of a long page.
+  const form = el?.closest?.('form[data-submit]') || null;
+  let after, failed = null, typed = null;
   try { after = await fn(el, event); }
   catch (err) {
-    S.notice = { tone: 'error', text: err.message };
-    announce(err.message);
+    failed = err;
+    if (form) typed = formState(form, err);
+    else { S.notice = { tone: 'error', text: err.message }; announce(err.message); }
     mod.onError?.(err);
   }
   clearTimeout(slow);
   busyNote.hidden = true;
   busy = false;
   render();
+  if (typed) showFormError(typed, failed.message);
   if (typeof after === 'function') after();
+}
+
+// What was in a form when it failed, and which field the error is about: the one the
+// action named (err.field), or the one it moved focus to.
+function formState(form, err) {
+  const active = document.activeElement;
+  const field = err.field || (active && active.form === form && active.tagName !== 'BUTTON' ? active.name : null);
+  return {
+    find: `form[data-submit="${form.dataset.submit}"]` + (form.dataset.id ? `[data-id="${CSS.escape(form.dataset.id)}"]` : ':not([data-id])'),
+    field,
+    values: [...form.elements].filter(e => e.name && e.tagName !== 'BUTTON').map(e => ({ name: e.name, id: e.id, value: e.value, checked: e.checked, box: e.type === 'checkbox' || e.type === 'radio' }))
+  };
+}
+function showFormError(typed, message) {
+  const form = root.querySelector(typed.find);
+  if (!form) { S.notice = { tone: 'error', text: message }; announce(message); render(); return; }
+  for (const v of typed.values) {
+    const e = (v.id && document.getElementById(v.id)) || [...form.elements].find(x => x.name === v.name && (!v.box || x.value === v.value));
+    if (!e) continue;
+    if (v.box) e.checked = v.checked; else e.value = v.value;
+  }
+  const note = document.createElement('p');
+  note.className = 'sdc-field__error ls-form-error';
+  note.id = 'ls-form-error';
+  note.setAttribute('role', 'alert');
+  note.textContent = message;
+  const field = typed.field && form.elements[typed.field];
+  const input = field && field.tagName ? field : null;
+  if (input && input.closest('.sdc-field')) {
+    input.closest('.sdc-field').append(note);
+    input.setAttribute('aria-invalid', 'true');
+    input.setAttribute('aria-describedby', [input.getAttribute('aria-describedby'), note.id].filter(Boolean).join(' '));
+    input.focus();
+  } else {
+    const submit = form.querySelector('button:not([type="button"])');
+    const row = submit?.closest('.ls-row');
+    (row && row !== form ? row : submit || form.lastElementChild).before(note);
+    (form.querySelector('input:not([type=hidden]), select, textarea') || submit)?.focus();
+  }
+  note.scrollIntoView({ block: 'nearest' });
 }
 
 root.addEventListener('click', e => {
@@ -182,7 +227,10 @@ async function boot() {
     navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'push') refresh(); });
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+  // A child's grid picks its columns from the screen, so it is drawn again when the
+  // screen turns or crosses the width where a third column fits.
   window.matchMedia('(orientation: landscape)').addEventListener('change', render);
+  window.matchMedia('(min-width: 380px)').addEventListener('change', () => { if (S.state?.role === 'child') render(); });
   pollLoop();
   // Opening the app is the moment the badge has done its job.
   if (navigator.clearAppBadge && S.state?.role === 'parent' && !S.state.requests.length) navigator.clearAppBadge().catch(() => {});
