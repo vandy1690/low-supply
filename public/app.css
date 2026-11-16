@@ -196,6 +196,9 @@ h1:focus { outline: none; }
 /* Ordered but not ready yet reads as a warning everywhere the child sees it: the tile,
    the note and the card inside the supply. It is not available right away. */
 .ls-tile--wait { border-color: var(--sdc-warning); background: var(--sdc-warning-tint); }
+/* Good news: a parent ordered it, or a delayed order is ready. */
+.ls-tile--done { border-color: var(--sdc-success); background: var(--sdc-success-tint); }
+.ls-tile__status--done { color: var(--sdc-success); }
 .ls-tile--plain { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
 .ls-tile--plain:hover, .ls-tile--plain:active { background: var(--sdc-text); }
 .ls-tile__status { display: inline-flex; align-items: center; gap: calc(var(--sdc-space-xs) / 2); font-size: var(--sdc-text-body); }
@@ -244,10 +247,12 @@ h1:focus { outline: none; }
 .ls-kid .ls-notice { font-size: var(--sdc-text-deck); }
 .ls-kid .ls-notice .sdc-btn { min-height: var(--ls-tap); font-size: var(--sdc-text-deck); }
 /* A note from a parent: plain words on the page with no box around them, and a plain
-   underlined "OK" at the end to put it away. A delayed order is said in the warning color. */
+   underlined "OK" at the end to put it away. A delayed order is said in the warning
+   color, and good news (ordered, ready) in the success color. */
 .ls-note { display: flex; align-items: center; gap: var(--sdc-space-sm); padding: 0 var(--sdc-space-xs); }
 .ls-note__text { flex: 1; min-width: 0; margin: 0; font-size: var(--sdc-text-deck); font-weight: 600; line-height: 1.35; }
 .ls-note--wait .ls-note__text { color: var(--sdc-warning); }
+.ls-note--done .ls-note__text { color: var(--sdc-success); }
 /* It looks like a link, and is still a full size thing to tap. */
 .ls-note__ok { flex: none; min-height: var(--ls-tap); min-width: var(--ls-tap); font-size: var(--sdc-text-deck); font-weight: 700; }
 

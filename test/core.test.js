@@ -321,3 +321,28 @@ test('quick info: parents share links and office numbers, a child never sees the
   await s.op(s.dad.token, { type: 'removeInfo', id: mom.info[1].id });
   assert.deepEqual((await s.state(s.dad.token)).info.map(i => [i.label, i.href]), [['Priority line', 'tel:6305550199,2']]);
 });
+
+test('the child button remembers that a supply was ordered for a week, or until the child asks again', async () => {
+  const s = await setup();
+  const sensor = async () => (await s.state(s.kid.token)).supplies.find(x => x.itemId === 'sensor');
+  assert.equal((await sensor()).done, null);
+  await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'low' });
+  assert.equal((await sensor()).done, null);
+  const id = (await s.state(s.dad.token)).requests[0].id;
+  await s.op(s.dad.token, { type: 'order', requestId: id });
+  assert.equal((await sensor()).done, 'ordered');
+  assert.equal((await sensor()).open, null);
+  s.clock.t += 6 * DAY;
+  assert.equal((await sensor()).done, 'ordered');
+  // Asking again puts the request first.
+  await s.op(s.kid.token, { type: 'request', itemId: 'sensor', level: 'out' });
+  assert.deepEqual([(await sensor()).open, (await sensor()).done], ['out', null]);
+  // A delayed order that comes ready says "ready", and the week runs out.
+  const id2 = (await s.state(s.dad.token)).requests[0].id;
+  await s.op(s.dad.token, { type: 'delay', requestId: id2, readyOn: '2026-11-20' });
+  assert.equal((await sensor()).done, null);
+  await s.op(s.dad.token, { type: 'order', requestId: id2 });
+  assert.equal((await sensor()).done, 'ready');
+  s.clock.t += 8 * DAY;
+  assert.equal((await sensor()).done, null);
+});
