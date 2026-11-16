@@ -78,8 +78,7 @@ function gridScreen() {
       <h1 class="sdc-u-sr-only">Tap what you need.</h1>
       ${errorNote()}
       ${st().notes.map(n => html`<div class="ls-note ${n.kind === 'wait' ? 'ls-note--wait' : 'ls-note--done'}" role="status">
-        <p class="ls-note__text">${noteText(n)}</p>
-        <button class="sdc-btn ls-btn--quiet ls-note__ok" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK<span class="sdc-u-sr-only">, got it</span></button></div>`)}
+        <p class="ls-note__text">${noteText(n)} <button class="ls-note__ok" id="seen-${n.requestId}" data-act="seen" data-id="${n.requestId}">OK<span class="sdc-u-sr-only">, got it</span></button></p></div>`)}
       ${list.length ? html`<ul class="ls-grid" ${gridStyle(list.length)}>${list.map((s, i) => html`<li ${lastSpan(list.length, i)}>
         <a class="ls-tile ${s.wait ? 'ls-tile--wait' : s.open ? `ls-tile--${s.open}` : s.done ? 'ls-tile--done' : ''}" id="tile-${s.itemId}" href="#/s/${s.itemId}" data-act="sayName" data-say="${s.say}">
           ${icon(s.icon)}<span>${s.label}</span>

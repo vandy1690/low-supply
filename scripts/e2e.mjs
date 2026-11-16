@@ -185,8 +185,10 @@ await check(kid, 'kid-supply-waiting');
 await kid.getByRole('link', { name: 'Back' }).click();
 await kid.getByText(/Dad ordered your Insulin\. 4 days until ready/).waitFor();
 assert.ok(await kid.locator('.ls-note--wait').count(), 'the note is said as a warning: it is not ready yet');
-{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox();
-  assert.ok(ok.width >= 44 && ok.height >= 44, 'OK reads as a link and is still easy to tap'); }
+{ const ok = await kid.getByRole('button', { name: 'OK' }).boundingBox(), text = await kid.locator('.ls-note--wait .ls-note__text').boundingBox();
+  const reach = await kid.evaluate(([x, top, bottom]) => [top - 10, bottom + 10].every(y => document.elementFromPoint(x, y)?.closest('.ls-note__ok')), [ok.x + ok.width / 2, ok.y, ok.y + ok.height]);
+  assert.ok(ok.width >= 40 && ok.height >= 24 && reach, 'OK reads as a link, and a tap just above or below the word still lands on it');
+  assert.ok(ok.x < text.x + text.width - 40, 'OK follows the words instead of sitting at the far edge'); }
 assert.match(await kid.locator('#tile-insulin').innerText(), /Ordered\. 4 days until ready/);
 await check(kid, 'kid-grid-waiting');
 await kid.getByRole('button', { name: 'OK' }).click();

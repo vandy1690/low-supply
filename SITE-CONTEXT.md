@@ -35,7 +35,7 @@ its Storybook yet.
 - **Level** (`ls-level`): the small Running low or I am out badge. SDC has no badge.
 - **Notice** (`ls-notice`): a message on a status tint, three tones plus plain.
 - **Note** (`ls-note`): a parent's note on the child's home screen. Plain words with no box
-  and an underlined OK link at the end; a delayed order is in the warning color and good
+  and an underlined OK link right after the last word; a delayed order is in the warning color and good
   news in the success color (Steve, 2026-11-16). The supply's tile matches: amber with the
   countdown while delayed, green with the one word "Ordered" (or "Ready") for a week after.
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
