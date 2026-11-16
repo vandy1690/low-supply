@@ -226,7 +226,7 @@ test('ordered but not ready until a date: the child is told, reminders pause, an
   await s.op(s.dad.token, { type: 'delay', requestId: id, readyOn: '2026-11-15' });
   // The other parent and the child hear about it. The parent who did it does not.
   assert.deepEqual(s.sent.map(m => m.to.split('/').pop()).sort(), ['kid', 'mom']);
-  assert.equal(s.sent.find(m => m.to.endsWith('kid')).body, 'It is not ready yet. 4 more sleeps.');
+  assert.equal(s.sent.find(m => m.to.endsWith('kid')).body, '4 days until ready.');
 
   let dad = await s.state(s.dad.token);
   assert.equal(dad.requests.length, 0, 'it leaves the needs-action list');

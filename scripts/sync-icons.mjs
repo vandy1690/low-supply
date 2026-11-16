@@ -18,7 +18,7 @@ const names = [
   // interface
   'volume', 'volume-off', 'arrow-left', 'chevron-right', 'check', 'x', 'settings', 'bell', 'bell-off', 'qrcode',
   'camera', 'plus', 'trash', 'list-check', 'link', 'users', 'clock', 'moon', 'school', 'refresh',
-  'alert-triangle', 'alert-octagon', 'info-circle', 'share-2', 'square-plus', 'home', 'circle-check', 'calendar-event'
+  'alert-triangle', 'alert-octagon', 'info-circle', 'share-2', 'square-plus', 'home', 'circle-check', 'calendar-event', 'sun'
 ];
 
 const out = {};

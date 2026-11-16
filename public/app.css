@@ -189,7 +189,7 @@ h1:focus { outline: none; }
 .ls-kid__back { display: inline-flex; align-items: center; justify-content: center; gap: var(--sdc-space-xs); min-width: var(--ls-tap); min-height: var(--ls-tap); padding: 0 var(--sdc-space-sm); border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid var(--sdc-rule-strong); background: var(--sdc-bg); color: var(--sdc-text); font-weight: 700; }
 .ls-kid__title { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; margin: 0; }
 .ls-kid__ask { font-family: var(--sdc-font-body); font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.2; margin: 0; padding: var(--sdc-space-sm); padding-inline-end: calc(var(--ls-tap) + var(--sdc-space-md)); }
-/* Waiting on a date: the day, one moon for each night left, and the count in words */
+/* Waiting on a delayed order: one sun for each day left, and the count as a big number */
 .ls-wait { display: grid; justify-items: center; gap: var(--sdc-space-xs); padding: var(--sdc-space-md); text-align: center;
   background: var(--sdc-surface); border: var(--ls-edge-thick) solid var(--sdc-accent); border-radius: var(--sdc-radius); }
 .ls-wait p { margin: 0; }
@@ -198,8 +198,8 @@ h1:focus { outline: none; }
 .ls-wait__count { font-size: var(--sdc-text-heading); font-weight: 700; line-height: 1.15; }
 /* The number is the thing a child reads, so it is the biggest thing on the card. */
 .ls-wait__number { display: block; font-size: var(--sdc-text-display-1); line-height: 1; font-variant-numeric: tabular-nums; }
-.ls-moons { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sdc-space-xs); color: var(--sdc-accent); }
-.ls-moons .ls-icon { width: var(--sdc-space-lg); height: var(--sdc-space-lg); stroke-width: 2; }
+.ls-days { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sdc-space-xs); color: var(--sdc-accent); }
+.ls-days .ls-icon { width: var(--sdc-space-lg); height: var(--sdc-space-lg); stroke-width: 2; }
 .ls-alerts { flex: 1; display: grid; grid-auto-rows: 1fr; gap: var(--sdc-space-xs); }
 .ls-alert {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sdc-space-xs);
