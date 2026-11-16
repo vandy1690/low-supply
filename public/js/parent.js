@@ -221,7 +221,7 @@ function requestsScreen() {
 // Links and office numbers both parents need in a hurry. Parents only: the server never
 // sends this list to a child's device.
 
-const INFO_STARTERS = ['Patient portal', 'Pharmacy', "Endocrinologist's office", "Endocrinologist's emergency line"];
+const INFO_STARTERS = ['Patient portal', 'Pharmacy', "Endocrinologist's office", "Endocrinologist's priority line"];
 // Only what the server could have made is ever put in a link.
 const safeHref = i => (i.kind === 'phone' ? /^tel:[+\d,]+$/.test(i.href) : /^https:\/\//.test(i.href)) ? i.href : null;
 
@@ -231,7 +231,10 @@ function infoFields(id, entry) {
       <p class="sdc-field__hint" id="${id}-label-hint">For example, Patient portal or Pharmacy.</p></div>
     <div class="sdc-field"><label class="sdc-field__label" for="${id}-value">Web link or phone number</label>
       <input class="sdc-field__input" id="${id}-value" name="value" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" value="${entry ? (entry.kind === 'link' ? entry.href : entry.value) : ''}" aria-describedby="${id}-value-hint">
-      <p class="sdc-field__hint" id="${id}-value-hint">Paste a link that starts with https, or type a phone number. No passwords, member numbers or names.</p></div>`;
+      <p class="sdc-field__hint" id="${id}-value-hint">Paste a link that starts with https, or type a phone number. No passwords, member numbers or names.</p></div>
+    <div class="sdc-field"><label class="sdc-field__label" for="${id}-press">Then press (optional, phone numbers only)</label>
+      <input class="sdc-field__input" id="${id}-press" name="press" maxlength="8" inputmode="numeric" autocomplete="off" value="${entry ? entry.press : ''}" aria-describedby="${id}-press-hint">
+      <p class="sdc-field__hint" id="${id}-press-hint">For a phone menu. Type 2, and the phone presses 2 for you about two seconds after the call connects.</p></div>`;
 }
 
 function infoScreen() {
@@ -252,10 +255,14 @@ function infoScreen() {
               <button class="sdc-btn ls-btn--danger ls-grow" type="button" id="info-rm-${i.id}" data-act="infoRemove" data-id="${i.id}" data-name="${i.label}">Remove</button></div>
           </form></li>`
         : html`<li class="ls-info">
-            <div class="ls-list__main"><span class="ls-list__name">${i.label}</span><span class="ls-mute ls-info__value">${i.value}</span></div>
             ${safeHref(i) ? (i.kind === 'phone'
-              ? html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-btn--lg" href="${safeHref(i)}">${icon('phone')} Call<span class="sdc-u-sr-only"> ${i.label}, ${i.value}</span></a>`
-              : html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-btn--lg" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')} Open<span class="sdc-u-sr-only"> ${i.label}, ${i.value}, in a new tab</span></a>`) : ''}
+              ? html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}">${icon('phone')}
+                  <span class="ls-info__text"><span class="ls-info__name"><span class="sdc-u-sr-only">Call </span>${i.label}</span>
+                  <span class="ls-info__value">${i.value}${i.press ? `, then press ${i.press}` : ''}</span></span></a>`
+              : html`<a class="sdc-btn sdc-btn--primary ls-btn--block ls-info__go" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')}
+                  <span class="ls-info__text"><span class="ls-info__name"><span class="sdc-u-sr-only">Open </span>${i.label}</span>
+                  <span class="ls-info__value">${i.value}<span class="sdc-u-sr-only">, leaves Low Supply</span></span></span></a>`)
+              : html`<p class="ls-list__name">${i.label}</p>`}
             <button class="sdc-btn ls-btn--quiet ls-info__edit" id="info-edit-${i.id}" data-act="infoEditOpen" data-id="${i.id}">Edit<span class="sdc-u-sr-only"> ${i.label}</span></button>
           </li>`))}</ul></div>`
       : html`<div class="ls-panel"><p class="ls-subhead">Nothing saved yet.</p>
@@ -495,11 +502,11 @@ export const actions = {
     return () => document.getElementById('info-edit-' + id)?.focus();
   },
   async infoSave(form) {
-    const id = form.dataset.id, label = form.elements.label.value.trim(), value = form.elements.value.value.trim();
+    const id = form.dataset.id, label = form.elements.label.value.trim(), value = form.elements.value.value.trim(), press = form.elements.press.value.trim();
     if (!label) { form.elements.label.focus(); throw new Error('Type what it is, for example Pharmacy.'); }
     if (!value) { form.elements.value.focus(); throw new Error('Type a web link or a phone number.'); }
-    if (id) { await op({ type: 'updateInfo', id, label, value }); infoEditing = null; }
-    else { await op({ type: 'addInfo', label, value }); infoLabel = ''; }
+    if (id) { await op({ type: 'updateInfo', id, label, value, press }); infoEditing = null; }
+    else { await op({ type: 'addInfo', label, value, press }); infoLabel = ''; }
     const text = `${label} was saved.`;
     S.notice = { tone: 'success', text }; announce(text);
     return focusHeading;

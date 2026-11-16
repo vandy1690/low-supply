@@ -57,6 +57,9 @@ side uses as few words as possible, and every word a child sees can be spoken al
   app, so it is kept narrow: a name and either an https link or a phone number, never
   sent to a child's device, with a note on the form not to enter passwords, member
   numbers or names. The starters use plain words (Patient portal, not a portal's brand).
+  A phone entry may carry a menu choice ("then press 2"), sent about two seconds after
+  the call connects. The fourth starter is the "priority line", not the "emergency line"
+  (Steve, 2026-11-16): emergencies are 911, and the page says so.
 - **The app never reads glucose and never suggests a dose.** It only passes a message.
   That is what keeps it out of medical device territory. Settled in the brief, 2026-11-11.
 - **Never tell a child something was sent when it was not.** No offline queue. A failed

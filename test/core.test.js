@@ -289,10 +289,15 @@ test('quick info: parents share links and office numbers, a child never sees the
   const s = await setup();
   const { cleanContact } = await import('../lib/core.js');
 
-  assert.deepEqual(cleanContact('(630) 555-0142'), { kind: 'phone', value: '(630) 555-0142', href: 'tel:6305550142' });
-  assert.deepEqual(cleanContact('+1 630.555.0142 ext 12'), { kind: 'phone', value: '+1 630.555.0142 ext 12', href: 'tel:+16305550142,12' });
-  assert.deepEqual(cleanContact('www.example.org/portal?a=1'), { kind: 'link', value: 'example.org', href: 'https://www.example.org/portal?a=1' });
-  assert.deepEqual(cleanContact('https://Pharmacy.example.com'), { kind: 'link', value: 'pharmacy.example.com', href: 'https://pharmacy.example.com/' });
+  assert.deepEqual(cleanContact('(630) 555-0142'), { kind: 'phone', value: '(630) 555-0142', press: '', href: 'tel:6305550142' });
+  // A menu choice is sent after a pause, once the call connects.
+  assert.deepEqual(cleanContact('(630) 555-0142', ' 2 '), { kind: 'phone', value: '(630) 555-0142', press: '2', href: 'tel:6305550142,2' });
+  assert.equal(cleanContact('630 555 0142 x12', '2#').href, 'tel:6305550142,12,2#');
+  assert.throws(() => cleanContact('630 555 0142', 'two'), /numbers only/);
+  assert.throws(() => cleanContact('example.org', '2'), /only works with a phone number/);
+  assert.deepEqual(cleanContact('+1 630.555.0142 ext 12'), { kind: 'phone', value: '+1 630.555.0142 ext 12', press: '', href: 'tel:+16305550142,12' });
+  assert.deepEqual(cleanContact('www.example.org/portal?a=1'), { kind: 'link', value: 'example.org', press: '', href: 'https://www.example.org/portal?a=1' });
+  assert.deepEqual(cleanContact('https://Pharmacy.example.com'), { kind: 'link', value: 'pharmacy.example.com', press: '', href: 'https://pharmacy.example.com/' });
   for (const bad of ['', '12345', 'http://example.org', 'javascript:alert(1)', 'data:text/html,hi', 'https://user:pw@example.org', 'not a link', 'localhost', 'tel:6305550142']) {
     assert.throws(() => cleanContact(bad), /./, bad);
   }
@@ -300,8 +305,9 @@ test('quick info: parents share links and office numbers, a child never sees the
   const id = (await s.op(s.dad.token, { type: 'addInfo', label: "Endocrinologist's emergency line", value: '630-555-0142' })).result.id;
   await s.op(s.mom.token, { type: 'addInfo', label: 'Pharmacy', value: 'pharmacy.example.com/refills' });
   const mom = await s.state(s.mom.token);
+  // Saved under the old starter name, it follows the starter to its new name.
   assert.deepEqual(mom.info.map(i => [i.label, i.kind, i.href]), [
-    ["Endocrinologist's emergency line", 'phone', 'tel:6305550142'], ['Pharmacy', 'link', 'https://pharmacy.example.com/refills']]);
+    ["Endocrinologist's priority line", 'phone', 'tel:6305550142'], ['Pharmacy', 'link', 'https://pharmacy.example.com/refills']]);
 
   // The child's device gets none of it and cannot change it.
   const kid = await s.state(s.kid.token);
@@ -310,8 +316,8 @@ test('quick info: parents share links and office numbers, a child never sees the
   assert.equal((await s.call('POST', 'op', { type: 'addInfo', label: 'X', value: 'example.org' }, s.kid.token)).status, 403);
   assert.equal((await s.call('POST', 'op', { type: 'removeInfo', id }, s.kid.token)).status, 403);
 
-  await s.op(s.mom.token, { type: 'updateInfo', id, label: 'Emergency line', value: '630 555 0199' });
-  assert.equal((await s.call('POST', 'op', { type: 'updateInfo', id, label: 'Emergency line', value: 'http://bad.example' }, s.dad.token)).status, 400);
+  await s.op(s.mom.token, { type: 'updateInfo', id, label: 'Priority line', value: '630 555 0199', press: '2' });
+  assert.equal((await s.call('POST', 'op', { type: 'updateInfo', id, label: 'Priority line', value: 'http://bad.example' }, s.dad.token)).status, 400);
   await s.op(s.dad.token, { type: 'removeInfo', id: mom.info[1].id });
-  assert.deepEqual((await s.state(s.dad.token)).info.map(i => [i.label, i.href]), [['Emergency line', 'tel:6305550199']]);
+  assert.deepEqual((await s.state(s.dad.token)).info.map(i => [i.label, i.href]), [['Priority line', 'tel:6305550199,2']]);
 });
