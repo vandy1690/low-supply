@@ -147,7 +147,49 @@ async function shots(browser) {
   await kid.goto(A + '/#/'); await kid.reload();
   await kid.getByText('Mom ordered your Sensor.').waitFor();
   await shot(kid, 'child-told-it-is-ordered');
+
+  // --- an order that is delayed ---
+  await kid.getByRole('link', { name: /Insulin/ }).click();
+  await kid.getByRole('button', { name: 'Running low' }).click();
+  await kid.getByRole('button', { name: /Cancel running low/ }).waitFor();
   await dad.reload();
+  await dad.getByRole('button', { name: /Ordered, but not ready until/ }).click();
+  const in5 = new Date(Date.now() + 5 * 864e5);
+  await dad.locator('input[type=date]').fill(`${in5.getFullYear()}-${String(in5.getMonth() + 1).padStart(2, '0')}-${String(in5.getDate()).padStart(2, '0')}`);
+  await shot(dad, 'parent-not-ready-until');
+  await dad.getByRole('button', { name: 'Save the date' }).click();
+  await dad.getByRole('heading', { name: 'Ordered, not ready yet' }).waitFor();
+  await dad.getByRole('heading', { name: 'Ordered, not ready yet' }).evaluate(h => window.scrollTo(0, h.getBoundingClientRect().top + scrollY - 24));
+  await shot(dad, 'parent-waiting');
+  await kid.goto(A + '/#/'); await kid.reload();
+  await kid.getByText(/Dad ordered your Insulin\. 5 days until ready/).waitFor();
+  await shot(kid, 'child-countdown-home');
+  await kid.getByRole('link', { name: /Insulin/ }).click();
+  await kid.locator('.ls-wait').waitFor();
+  await shot(kid, 'child-countdown');
+  await dad.getByRole('button', { name: /It is ready/ }).click();
+  await dad.getByText('Marked ready. Kiddo was told.').waitFor();
+  await kid.goto(A + '/#/'); await kid.reload();
+  await kid.getByText('Good news. Your Insulin is ready.').waitFor();
+  await shot(kid, 'child-ready');
+
+  // --- quick info ---
+  await dad.getByRole('link', { name: 'Info' }).click();
+  await dad.getByRole('heading', { name: 'Quick info' }).waitFor();
+  for (const [name, value, press] of [['Patient portal', 'portal.example.org/signin', ''], ['Pharmacy', 'pharmacy.example.com/refills', ''],
+    ["Endocrinologist's office", '(630) 555-0142', ''], ["Endocrinologist's priority line", '(312) 555-0199', '2']]) {
+    await dad.getByRole('button', { name, exact: true }).click();
+    await dad.locator('#info-new-value').fill(value);
+    if (press) await dad.locator('#info-new-press').fill(press);
+    if (name === 'Patient portal') { await dad.locator('#info-add-h').evaluate(h => window.scrollTo(0, h.getBoundingClientRect().top + scrollY - 24)); await shot(dad, 'quick-info-add'); }
+    await dad.locator('form:not([data-id])[data-submit=infoSave] button').click();
+    await dad.getByText(`${name} was saved.`).waitFor();
+  }
+  await dad.goto(A + '/#/info'); await dad.reload();
+  await dad.getByRole('heading', { name: 'Quick info' }).waitFor();
+  await dad.evaluate(() => window.scrollTo(0, 0));   // a reload puts the page back where it was scrolled to
+  await shot(dad, 'quick-info');
+
   await dad.getByRole('link', { name: 'Settings' }).click();
   await dad.getByRole('heading', { name: 'Settings' }).waitFor();
   await shot(dad, 'settings');
