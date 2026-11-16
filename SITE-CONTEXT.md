@@ -35,9 +35,9 @@ its Storybook yet.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
 - **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header. Three equal tabs since
   2026-11-16 (Requests, Info, Settings); icons hide under 30rem so no label breaks.
-- **Wait** (`ls-wait`, `ls-days`): the child's "ordered, but not ready yet" card: one
-  sun for each day left (up to ten) and the count as a large number. Added 2026-11-16.
-  Tile and Notice each gained a `--wait` variant on the accent color. Request cards have
+- **Wait** (`ls-wait`): the child's "ordered, but not ready yet" card: the
+  count as a large number on the warning tint, with no row of icons (Steve, 2026-11-16). Added 2026-11-16.
+  The wait tile and the child's wait note use the warning look too. Request cards have
   no colored edge (removed at Steve's request, 2026-11-16): the level badge carries it.
 - Token gap: SDC has no semantic name for a warning fill. The app aliases
   `--ls-low-fill` to the primitive `--sdc-signal-amber`. A `--sdc-warning-fill` would fix it.
