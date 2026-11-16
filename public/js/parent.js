@@ -7,7 +7,9 @@ import { enablePush, disablePush, pushBlocker, permission } from './push.js';
 const SETUP = ['notify', 'parent', 'child', 'supplies', 'schedule', 'link'];
 const invites = {};   // memberId -> { code, exp, svg, count }
 let setupParent = null;
-let delaying = null;   // the request whose "not ready until" date is being typed
+let delaying = null;
+let infoEditing = null;  // the quick info entry being changed
+let infoLabel = '';      // a name picked from the starters, waiting for its link or number   // the request whose "not ready until" date is being typed
 
 const st = () => S.state;
 const member = id => st().members.find(m => m.id === id);
@@ -23,6 +25,7 @@ export function pollMs(path) { return path.startsWith('/link/') || ['parent', 'l
 export function screen(path) {
   if (setupStep()) return setupScreen(setupStep());
   if (path === '/settings') return settingsScreen();
+  if (path === '/info') return infoScreen();
   if (path.startsWith('/child/') && member(path.slice(7))?.role === 'child') return childScreen(member(path.slice(7)));
   if (path.startsWith('/link/') && member(path.slice(6))) return linkScreen(member(path.slice(6)));
   return requestsScreen();
@@ -43,6 +46,7 @@ const bar = here => html`<header class="ls-bar">
   <p class="ls-bar__name">Low Supply</p>
   <nav class="ls-nav" aria-label="Main">
     <a href="#/" ${here === 'requests' ? html`aria-current="page"` : ''}>${icon('list-check')} Requests</a>
+    <a href="#/info" ${here === 'info' ? html`aria-current="page"` : ''}>${icon('info-circle')} Info</a>
     <a href="#/settings" ${here === 'settings' ? html`aria-current="page"` : ''}>${icon('settings')} Settings</a>
   </nav></header>`;
 
@@ -209,6 +213,62 @@ function requestsScreen() {
           <div class="ls-list__main"><span class="ls-list__name">${r.item} for ${r.child}</span><span class="ls-mute">Ordered by ${r.by}, ${when(r.closedAt)}.</span></div>
           ${r.canReopen ? html`<button class="sdc-btn" id="reopen-${r.id}" data-act="reopen" data-id="${r.id}">Not ordered yet<span class="sdc-u-sr-only">: put ${r.item} for ${r.child} back on the list</span></button>` : ''}
         </li>`)}</ul></div></section>` : ''}
+    </main>`
+  };
+}
+
+// ---------- quick info ----------
+// Links and office numbers both parents need in a hurry. Parents only: the server never
+// sends this list to a child's device.
+
+const INFO_STARTERS = ['Patient portal', 'Pharmacy', "Endocrinologist's office", "Endocrinologist's emergency line"];
+// Only what the server could have made is ever put in a link.
+const safeHref = i => (i.kind === 'phone' ? /^tel:[+\d,]+$/.test(i.href) : /^https:\/\//.test(i.href)) ? i.href : null;
+
+function infoFields(id, entry) {
+  return html`<div class="sdc-field"><label class="sdc-field__label" for="${id}-label">What it is</label>
+      <input class="sdc-field__input" id="${id}-label" name="label" maxlength="40" autocomplete="off" value="${entry ? entry.label : infoLabel}" aria-describedby="${id}-label-hint">
+      <p class="sdc-field__hint" id="${id}-label-hint">For example, Patient portal or Pharmacy.</p></div>
+    <div class="sdc-field"><label class="sdc-field__label" for="${id}-value">Web link or phone number</label>
+      <input class="sdc-field__input" id="${id}-value" name="value" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" value="${entry ? (entry.kind === 'link' ? entry.href : entry.value) : ''}" aria-describedby="${id}-value-hint">
+      <p class="sdc-field__hint" id="${id}-value-hint">Paste a link that starts with https, or type a phone number. No passwords, member numbers or names.</p></div>`;
+}
+
+function infoScreen() {
+  const list = st().info;
+  const unused = INFO_STARTERS.filter(n => !list.some(i => i.label.toLowerCase() === n.toLowerCase()));
+  return {
+    key: 'info', title: 'Quick info',
+    body: html`<main class="ls-page">
+      ${bar('info')}
+      ${notice()}
+      <h1 class="ls-title">Quick info</h1>
+      <p class="ls-lede">The links and numbers you reach for in a hurry. For an emergency, call 911.</p>
+      ${list.length ? html`<div class="ls-panel"><ul class="ls-list">${list.map(i => (infoEditing === i.id
+        ? html`<li><form class="ls-stack ls-grow" data-submit="infoSave" data-id="${i.id}" novalidate>
+            ${infoFields('info-' + i.id, i)}
+            <div class="ls-row"><button class="sdc-btn sdc-btn--primary ls-grow">Save</button>
+              <button class="sdc-btn ls-grow" type="button" data-act="infoEditClose">Never mind</button>
+              <button class="sdc-btn ls-btn--danger ls-grow" type="button" id="info-rm-${i.id}" data-act="infoRemove" data-id="${i.id}" data-name="${i.label}">Remove</button></div>
+          </form></li>`
+        : html`<li>
+            <div class="ls-list__main"><span class="ls-list__name">${i.label}</span><span class="ls-mute ls-info__value">${i.value}</span></div>
+            ${safeHref(i) ? (i.kind === 'phone'
+              ? html`<a class="sdc-btn sdc-btn--primary" href="${safeHref(i)}">${icon('phone')} Call<span class="sdc-u-sr-only"> ${i.label}, ${i.value}</span></a>`
+              : html`<a class="sdc-btn sdc-btn--primary" href="${safeHref(i)}" target="_blank" rel="noopener noreferrer">${icon('external-link')} Open<span class="sdc-u-sr-only"> ${i.label}, ${i.value}, in a new tab</span></a>`) : ''}
+            <button class="sdc-btn" id="info-edit-${i.id}" data-act="infoEditOpen" data-id="${i.id}">Edit<span class="sdc-u-sr-only"> ${i.label}</span></button>
+          </li>`))}</ul></div>`
+      : html`<div class="ls-panel"><p class="ls-subhead">Nothing saved yet.</p>
+          <p class="ls-mute">Add the patient portal, the pharmacy and the doctor's office below, so neither of you has to go looking.</p></div>`}
+
+      <section class="ls-panel" aria-labelledby="info-add-h"><h2 class="ls-heading" id="info-add-h">Add a link or a number</h2>
+        ${unused.length ? html`<div class="ls-stack" role="group" aria-labelledby="info-start-h"><p class="ls-mute" id="info-start-h">Start with one of these:</p>
+          <div class="ls-row">${unused.map((n, x) => html`<button class="sdc-btn" type="button" id="info-start-${x}" data-act="infoStart" data-label="${n}" aria-pressed="${infoLabel === n ? 'true' : 'false'}">${n}</button>`)}</div></div>` : ''}
+        <form class="ls-stack" data-submit="infoSave" novalidate>
+          ${infoFields('info-new', null)}
+          <button class="sdc-btn sdc-btn--primary">${icon('plus')} Save</button></form>
+      </section>
+      <p class="ls-mute">Both parents see this page and can change it. A child's device never sees it.</p>
     </main>`
   };
 }
@@ -418,6 +478,37 @@ export const actions = {
     const word = r?.wait ? 'ready' : 'ordered';
     const text = r ? `Marked ${word}. ${r.child} was told.` : `Marked ${word}.`;
     if (delaying === el.dataset.id) delaying = null;
+    S.notice = { tone: 'success', text }; announce(text);
+    return focusHeading;
+  },
+  infoStart(el) {
+    infoLabel = el.dataset.label;
+    return () => document.getElementById('info-new-value')?.focus();
+  },
+  infoEditOpen(el) {
+    infoEditing = el.dataset.id;
+    return () => document.getElementById(`info-${el.dataset.id}-label`)?.focus();
+  },
+  infoEditClose() {
+    const id = infoEditing;
+    infoEditing = null;
+    return () => document.getElementById('info-edit-' + id)?.focus();
+  },
+  async infoSave(form) {
+    const id = form.dataset.id, label = form.elements.label.value.trim(), value = form.elements.value.value.trim();
+    if (!label) { form.elements.label.focus(); throw new Error('Type what it is, for example Pharmacy.'); }
+    if (!value) { form.elements.value.focus(); throw new Error('Type a web link or a phone number.'); }
+    if (id) { await op({ type: 'updateInfo', id, label, value }); infoEditing = null; }
+    else { await op({ type: 'addInfo', label, value }); infoLabel = ''; }
+    const text = `${label} was saved.`;
+    S.notice = { tone: 'success', text }; announce(text);
+    return focusHeading;
+  },
+  async infoRemove(el) {
+    if (!await confirmDialog(`Remove ${el.dataset.name}?`, 'It comes off this page for both parents.', 'Remove')) return;
+    await op({ type: 'removeInfo', id: el.dataset.id });
+    infoEditing = null;
+    const text = `${el.dataset.name} was removed.`;
     S.notice = { tone: 'success', text }; announce(text);
     return focusHeading;
   },

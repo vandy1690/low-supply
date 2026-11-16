@@ -56,14 +56,18 @@ h1:focus { outline: none; }
 /* Top bar */
 .ls-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sdc-space-sm); padding-bottom: var(--sdc-space-sm); border-bottom: var(--ls-edge) solid var(--sdc-rule); }
 .ls-bar__name { font-family: var(--sdc-font-display); font-size: var(--sdc-text-subheading); font-synthesis: none; font-weight: 400; margin: 0; }
-.ls-nav { display: flex; gap: var(--sdc-space-xs); }
+/* Three tabs of equal width that take their own row when the name does not leave room.
+   A label never breaks inside a word. */
+.ls-nav { flex: 1 1 20rem; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--sdc-space-xs); }
 .ls-nav a {
-  display: inline-flex; align-items: center; gap: var(--sdc-space-xs);
-  min-height: var(--sdc-control-h); padding: var(--sdc-space-xs) var(--sdc-space-sm);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sdc-space-xs); white-space: nowrap;
+  min-height: var(--sdc-control-h); padding: var(--sdc-space-xs) var(--sdc-space-xs);
   border-radius: var(--sdc-radius-sm); border: var(--ls-edge) solid transparent;
   color: var(--sdc-text); font-weight: 600; font-size: var(--sdc-text-nav);
 }
 .ls-nav a:hover { border-color: var(--sdc-rule-strong); }
+/* On a phone the words alone fit; the icons come back when there is room. */
+@media (max-width: 30rem) { .ls-nav .ls-icon { display: none; } }
 /* Solid ink is the system's "you are here". */
 .ls-nav a[aria-current="page"] { background: var(--sdc-text); color: var(--sdc-bg); }
 .ls-back { display: inline-flex; align-items: center; gap: var(--sdc-space-xs); min-height: var(--sdc-control-h); color: var(--sdc-text); font-weight: 600; justify-self: start; }
@@ -73,6 +77,8 @@ h1:focus { outline: none; }
 .sdc-btn { justify-content: center; min-height: var(--sdc-control-h); text-align: center; }
 .sdc-btn:disabled { background: var(--sdc-surface-2); color: var(--sdc-text-mute); border-color: var(--sdc-rule); cursor: not-allowed; transform: none; box-shadow: none; }
 .ls-btn--block { width: 100%; }
+/* A starter that has been picked */
+.sdc-btn[aria-pressed="true"] { background: var(--sdc-text); color: var(--sdc-bg); border-color: var(--sdc-text); }
 .ls-btn--lg { min-height: var(--sdc-space-2xl); font-size: var(--sdc-text-deck); }
 .ls-btn--danger { color: var(--sdc-error); border-color: var(--sdc-error); }
 .ls-btn--danger:hover { background: var(--sdc-error); color: var(--sdc-paper-white); border-color: var(--sdc-error); }
@@ -90,6 +96,8 @@ h1:focus { outline: none; }
 .ls-list > li:last-child { padding-bottom: 0; }
 .ls-list__main { flex: 1 1 10rem; min-width: 0; display: grid; }
 .ls-list__name { font-weight: 600; }
+/* A web address has no spaces to break on, so it may break anywhere. */
+.ls-info__value { overflow-wrap: anywhere; }
 .ls-list__link { display: flex; align-items: center; justify-content: space-between; gap: var(--sdc-space-sm); flex: 1 1 100%; min-height: var(--sdc-control-h); color: var(--sdc-text); }
 .ls-list__link:hover .ls-list__name { text-decoration: underline; }
 

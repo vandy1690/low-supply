@@ -31,7 +31,8 @@ its Storybook yet.
 - **Notice** (`ls-notice`): a message on a status tint, three tones plus plain.
 - **Panel** (`ls-panel`) and **List** (`ls-list`): a flat surface card and rows inside it.
 - **Dialog** (`ls-dialog`): a short yes or no. SDC's modal is the case study modal.
-- **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header.
+- **Bar and nav** (`ls-bar`, `ls-nav`): the parent app header. Three equal tabs since
+  2026-11-16 (Requests, Info, Settings); icons hide under 30rem so no label breaks.
 - **Wait** (`ls-wait`, `ls-days`): the child's "ordered, but not ready yet" card: one
   sun for each day left (up to ten) and the count as a large number. Added 2026-11-16.
   Tile, Request and Notice each gained a `--wait` variant on the accent color.
@@ -50,6 +51,12 @@ side uses as few words as possible, and every word a child sees can be spoken al
   Nasal glucagon (the last three added 2026-11-11). Settled in the brief, 2026-11-11.
 - **No real names or personal details.** People are nicknames only. No accounts, no email.
   Settled in the brief, 2026-11-11.
+- **Quick info holds links and office numbers only, and only parents see it.** Added
+  2026-11-16 at Steve's request: the patient portal, the pharmacy, the doctor's office and
+  its emergency line. It is the one place the family stores something from outside the
+  app, so it is kept narrow: a name and either an https link or a phone number, never
+  sent to a child's device, with a note on the form not to enter passwords, member
+  numbers or names. The starters use plain words (Patient portal, not a portal's brand).
 - **The app never reads glucose and never suggests a dose.** It only passes a message.
   That is what keeps it out of medical device territory. Settled in the brief, 2026-11-11.
 - **Never tell a child something was sent when it was not.** No offline queue. A failed

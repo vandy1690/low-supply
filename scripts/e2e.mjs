@@ -222,6 +222,50 @@ if (process.env.E2E_DATA) {
 await kid.getByRole('button', { name: 'Read aloud' }).click();
 await kid.locator('.ls-speaker[aria-pressed="false"]').waitFor();
 
+// --- Quick info: links and office numbers, for parents only ---
+await dad.getByRole('link', { name: 'Info' }).click();
+await dad.getByRole('heading', { name: 'Quick info' }).waitFor();
+await check(dad, 'info-empty');
+await dad.getByRole('button', { name: 'Pharmacy' }).click();
+assert.equal(await dad.evaluate(() => document.activeElement.id), 'info-new-value', 'picking a starter moves to the link box');
+assert.equal(await dad.locator('#info-new-label').inputValue(), 'Pharmacy');
+await dad.locator('#info-new-value').fill('http://pharmacy.example.com');
+await dad.getByRole('button', { name: 'Save' }).click();
+assert.match(await dad.locator('.ls-notice--error').innerText(), /starts with https/);
+await dad.locator('#info-new-label').fill('Pharmacy');
+await dad.locator('#info-new-value').fill('pharmacy.example.com/refills');
+await dad.getByRole('button', { name: 'Save' }).click();
+await dad.getByText('Pharmacy was saved.').waitFor();
+const open = dad.getByRole('link', { name: /Open Pharmacy/ });
+assert.equal(await open.getAttribute('href'), 'https://pharmacy.example.com/refills');
+assert.equal(await open.getAttribute('rel'), 'noopener noreferrer');
+await dad.getByRole('button', { name: "Endocrinologist's emergency line" }).click();
+await dad.locator('#info-new-value').fill('(630) 555-0142');
+await dad.getByRole('button', { name: 'Save' }).click();
+await dad.getByText("Endocrinologist's emergency line was saved.").waitFor();
+assert.equal(await dad.getByRole('link', { name: /Call Endocrinologist's emergency line/ }).getAttribute('href'), 'tel:6305550142');
+await check(dad, 'info-list');
+await mom.goto(base + '/#/info'); await mom.reload();
+await mom.getByRole('link', { name: /Open Pharmacy/ }).waitFor();
+await kid.goto(base + '/#/info'); await kid.reload();
+await kid.locator('.ls-grid').waitFor();
+assert.doesNotMatch(await kid.locator('#app').innerText(), /Quick info|Pharmacy|555/, 'a child device never sees it');
+await dad.getByRole('button', { name: 'Edit Pharmacy' }).click();
+assert.match(await dad.evaluate(() => document.activeElement.id), /^info-i_.+-label$/, 'focus moves into the edit form');
+await check(dad, 'info-edit');
+await dad.locator('form[data-id] input[name=label]').fill('Our pharmacy');
+await dad.locator('form[data-id]').getByRole('button', { name: 'Save' }).click();
+await dad.getByText('Our pharmacy was saved.').waitFor();
+await dad.getByRole('button', { name: 'Edit Our pharmacy' }).click();
+await dad.getByRole('button', { name: 'Remove' }).click();
+await dad.locator('dialog[open]').getByRole('button', { name: 'Remove' }).click();
+await dad.getByText('Our pharmacy was removed.').waitFor();
+assert.equal(await dad.getByRole('link', { name: /Open/ }).count(), 0);
+await dad.setViewportSize({ width: 320, height: 568 });
+await dad.waitForTimeout(200);
+await check(dad, 'info-320');
+await dad.setViewportSize({ width: 402, height: 874 });
+
 // --- Settings, child page, relink and remove a device ---
 await dad.getByRole('link', { name: 'Settings' }).click();
 await dad.getByRole('heading', { name: 'Settings' }).waitFor();

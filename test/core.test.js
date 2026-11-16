@@ -284,3 +284,34 @@ test('ordered but not ready until a date: the child is told, reminders pause, an
   assert.equal(dad.waiting.length, 0);
   assert.equal(dad.recent.length, 1);
 });
+
+test('quick info: parents share links and office numbers, a child never sees them, and only safe links are kept', async () => {
+  const s = await setup();
+  const { cleanContact } = await import('../lib/core.js');
+
+  assert.deepEqual(cleanContact('(630) 555-0142'), { kind: 'phone', value: '(630) 555-0142', href: 'tel:6305550142' });
+  assert.deepEqual(cleanContact('+1 630.555.0142 ext 12'), { kind: 'phone', value: '+1 630.555.0142 ext 12', href: 'tel:+16305550142,12' });
+  assert.deepEqual(cleanContact('www.example.org/portal?a=1'), { kind: 'link', value: 'example.org', href: 'https://www.example.org/portal?a=1' });
+  assert.deepEqual(cleanContact('https://Pharmacy.example.com'), { kind: 'link', value: 'pharmacy.example.com', href: 'https://pharmacy.example.com/' });
+  for (const bad of ['', '12345', 'http://example.org', 'javascript:alert(1)', 'data:text/html,hi', 'https://user:pw@example.org', 'not a link', 'localhost', 'tel:6305550142']) {
+    assert.throws(() => cleanContact(bad), /./, bad);
+  }
+
+  const id = (await s.op(s.dad.token, { type: 'addInfo', label: "Endocrinologist's emergency line", value: '630-555-0142' })).result.id;
+  await s.op(s.mom.token, { type: 'addInfo', label: 'Pharmacy', value: 'pharmacy.example.com/refills' });
+  const mom = await s.state(s.mom.token);
+  assert.deepEqual(mom.info.map(i => [i.label, i.kind, i.href]), [
+    ["Endocrinologist's emergency line", 'phone', 'tel:6305550142'], ['Pharmacy', 'link', 'https://pharmacy.example.com/refills']]);
+
+  // The child's device gets none of it and cannot change it.
+  const kid = await s.state(s.kid.token);
+  assert.equal('info' in kid, false);
+  assert.doesNotMatch(JSON.stringify(kid), /5550142|pharmacy\.example/);
+  assert.equal((await s.call('POST', 'op', { type: 'addInfo', label: 'X', value: 'example.org' }, s.kid.token)).status, 403);
+  assert.equal((await s.call('POST', 'op', { type: 'removeInfo', id }, s.kid.token)).status, 403);
+
+  await s.op(s.mom.token, { type: 'updateInfo', id, label: 'Emergency line', value: '630 555 0199' });
+  assert.equal((await s.call('POST', 'op', { type: 'updateInfo', id, label: 'Emergency line', value: 'http://bad.example' }, s.dad.token)).status, 400);
+  await s.op(s.dad.token, { type: 'removeInfo', id: mom.info[1].id });
+  assert.deepEqual((await s.state(s.dad.token)).info.map(i => [i.label, i.href]), [['Emergency line', 'tel:6305550199']]);
+});
